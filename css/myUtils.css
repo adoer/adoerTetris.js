@@ -1,0 +1,14 @@
+* {
+  box-sizing: border-box;
+}
+.clearfix {
+  /* 触发 hasLayout */
+  zoom: 1;
+}
+.clearfix:after {
+  content: "020";
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
+}
