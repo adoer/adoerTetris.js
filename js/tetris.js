@@ -13,6 +13,7 @@
         canvasW:this.blockSize*10,
         canvasH:this.blockSize*20,
         activeBlock:new Array(4),
+        time:null,
         //创建数组矩阵
         dataArr:
             [
@@ -42,15 +43,20 @@
             var blockRandomNum = Math.floor(Math.random()*7);
             //随机产生0-4，代表4个方向的形态
             var dirRandomNum = Math.floor(Math.random()*4);
+            //先用一个S形态 的 上形态来试验一下
+            blockRandomNum=0;
+            dirRandomNum=0;
             switch (blockRandomNum){
                 // S形态
                 case 0:{
                     switch (dirRandomNum){
-                        //上形态
+                        //上形态.0
                         case 0:{
                             self.activeBlock=[
-                                {x:3,y:0},
+                                {x:3,y:1},
+                                {x:4,y:1},
                                 {x:4,y:0},
+                                {x:5,y:0},
                             ]
                         }
                     }
@@ -90,17 +96,25 @@
             self.canvas.ctx.strokeStyle="rgba(0,0,0,0.2)";
             self.canvas.ctx.stroke();
         },
-        // 自动执行函数
+        //根据activeBlock绘制方块形态
+
+        // 方块下移改变其各个小块的坐标
+
+        // 播放开始
         play:function(){
-            var time=setInterval(function(){
+            var self=this;
+            console.log(self.activeBlock);
+            self.time=setInterval(function(){
                 // 调用随机生成形态的函数
                 // 调用修改dataArr的函数
+
                 // 调用实时绘制canvas的函数
             },1000)
         },
         _init:function(){
             var self=this;
             self.drawBase();
+            self.drawBlock();
             self.play();
         }
     }
