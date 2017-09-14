@@ -15,6 +15,9 @@
 
         downFlag:true,
 
+        //下落时间间隔 初始为每隔1000ms下落一个小方格。
+        speedTime:1000,
+
         // 当前活动块对象
         activeBlock:[
             {x:0,y:0},
@@ -23,12 +26,13 @@
             {x:0,y:0},
         ],
         time:null,
+        bgTime:null,
+        timeFlag:false,
         //创建数组
         dataArr:
             [
                 //真实
-                [0,1,2,3,4,5,6,7,8,9],//参照行
-
+             // [0,1,2,3,4,5,6,7,8,9],
                 [0,0,0,0,1,0,0,0,0,0],
                 [0,0,0,0,1,1,0,0,0,0],
                 [0,0,0,0,0,1,0,0,0,0],
@@ -99,10 +103,10 @@
         // 更新dataArr对应位置元素值为1或者0
         updateDataArr:function(dataXY,value){
             var self=this;
-            // X为第几列，Y为第几行
-            for(var i=0,l=self.dataArr;i<l;i++){
-                for(var j=0,l=dataXY.length;i<l;i++){
-                    self.dataArr[dataXY[j].x][dataXY[j].y]=value;
+            // Y为第几行，X为第几列。
+            for(var i1=0,l1=self.dataArr.length;i1<l1;i1++){
+                for(var j=0,l2=dataXY.length;j<l2;j++){
+                    self.dataArr[dataXY[j].y][dataXY[j].x]=value;
                 }
             }
         },
@@ -120,8 +124,9 @@
                 //判断是否超过底线
                 if(nextActiveBlockXY[i].y+1>=self.cols){
                     //更新dataArr对应位置的元素为1
-
+                    self.updateDataArr(activeBlockXY,1);
                     moveFlag=false;
+                    self.timeFlag=true;
                     break;
                 }
                 // 判断是否遇到dataArr中值为1的元素，并且超过
@@ -131,10 +136,10 @@
                 for(var i=0,l=activeBlockXY.length;i<l;i++){
                     activeBlockXY[i].y+=1;
                 }
-            }else{
-                //
             }
         },
+        // 根据坐标绘制一个小方格
+        // draw
         //根据当前 activeBlock 坐标画出其真实形态
         drawBlockCanvas:function(){
             var self=this;
@@ -145,6 +150,20 @@
                 self.canvas.ctx.fillStyle="rgba(0,0,0,0.3)";
                 self.canvas.ctx.fillRect(x, y,self.blockSize, self.blockSize)
             }
+        },
+        //根据dataArr画出元素值为1的小方块
+        drawDataArrCanvas:function(){
+            var self=this;
+          for(var i=0,l=self.dataArr.length;i<l;i++){
+              var arr=self.dataArr[i];
+            for(var j=0,l1=arr;j<l1;j++){
+                if(arr[j]==1){
+                    var x=j*self.blockSize;
+                    var y=i;
+
+                }
+            }
+          }
         },
         //清除画布
         clearCanvas:function(){
@@ -205,7 +224,10 @@
                 self.changeBlocwkXY(self.activeBlock)
                 // 根据方块坐标绘制新的方块
                 self.drawBlockCanvas();
-            },1000);
+                if(self.timeFlag){
+                    clearInterval(self.time);
+                }
+            },self.speedTime);
         },
         _init:function(){
             var self=this;
