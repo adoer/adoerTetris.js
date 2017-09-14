@@ -13,35 +13,25 @@
         canvasW:this.blockSize*10,
         canvasH:this.blockSize*20,
 
+        downFlag:true,
+
         // 当前活动块对象
-        activeBlock:{
-            //坐标值 一个坐标代表组成形态的一个小方块
-            xy:[
-                {x:0,y:0},
-                {x:0,y:0},
-                {x:0,y:0},
-                {x:0,y:0},
-            ],
-            //形态 一共七种 S，Z，L，J，I，O，T
-            shape:"",
-            //方向 一种有4种方向 up down left right
-            direction:""
-        },
+        activeBlock:[
+            {x:0,y:0},
+            {x:0,y:0},
+            {x:0,y:0},
+            {x:0,y:0},
+        ],
         time:null,
-        //创建数组矩阵
+        //创建数组
         dataArr:
-            [   //头部虚拟
-                [9,9,9,9,9,9,9,9,9,9],
-                [9,9,9,9,9,9,9,9,9,9],
-                [9,9,9,9,9,9,9,9,9,9],
-                [9,9,9,9,9,9,9,9,9,9],
-                [0,1,2,3,4,5,6,7,8,9],
+            [
                 //真实
                 [0,1,2,3,4,5,6,7,8,9],//参照行
 
+                [0,0,0,0,1,0,0,0,0,0],
                 [0,0,0,0,1,1,0,0,0,0],
-                [0,0,0,1,1,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,1,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0,0],
@@ -59,7 +49,7 @@
                 [0,0,0,0,0,0,0,0,0,0],
             ],
         //随机生成 一种方块 （一共七种 S，Z，L，J，I，O，T 每一种有4种方向(上，右，下，左),一共有28种形态）
-        drawBlock:function(){
+        builBlockXY:function(){
             var self=this;
             //随机产生0-6数组，代表7种形态。
             var blockRandomNum = Math.floor(Math.random()*7);
@@ -96,24 +86,54 @@
                         case 1:
                         case 3:{
                             self.activeBlock = [
-                                {x: 4, y: 0},
-                                {x: 4, y: 1},
-                                {x: 5, y: 1},
-                                {x: 5, y: 2},
+                                {x: 4, y: -2},
+                                {x: 4, y: -1},
+                                {x: 5, y: -1},
+                                {x: 5, y: 0},
                             ]
                         } break;
                     }
                 }
             }
         },
-        // 生成方块下一步移动的坐标
-        changeBlocwkXY:function(activeBlockXY){
-            for(var i=0,l=activeBlockXY.length;i<l;i++){
-                if(activeBlockXY[i].y<18){
-                    activeBlockXY[i].y+=1;
+        // 更新dataArr对应位置元素值为1或者0
+        updateDataArr:function(dataXY,value){
+            var self=this;
+            // X为第几列，Y为第几行
+            for(var i=0,l=self.dataArr;i<l;i++){
+                for(var j=0,l=dataXY.length;i<l;i++){
+                    self.dataArr[dataXY[j].x][dataXY[j].y]=value;
                 }
             }
+        },
+        // 生成方块下一步移动的坐标
+        changeBlocwkXY:function(activeBlockXY){
+            var self=this;
+            var moveFlag=true;
+            var nextActiveBlockXY=activeBlockXY.slice();
+            /*
+                判断下一个nextActiveBlockXY中的任意一个小方格的Y坐标
+                1、是否超过底线，如果超过，那么采用当前方块，并停止向下移动。
+                2、是否遇到dataArr中值为1的元素，如果遇到，那么采用当前方块，并停止向下移动。
+            */
+            for(var i=0,l=nextActiveBlockXY.length;i<l;i++){
+                //判断是否超过底线
+                if(nextActiveBlockXY[i].y+1>=self.cols){
+                    //更新dataArr对应位置的元素为1
 
+                    moveFlag=false;
+                    break;
+                }
+                // 判断是否遇到dataArr中值为1的元素，并且超过
+
+            }
+            if(moveFlag){
+                for(var i=0,l=activeBlockXY.length;i<l;i++){
+                    activeBlockXY[i].y+=1;
+                }
+            }else{
+                //
+            }
         },
         //根据当前 activeBlock 坐标画出其真实形态
         drawBlockCanvas:function(){
@@ -123,12 +143,15 @@
                 var x=activeBlock[i].x*self.blockSize;
                 var y=activeBlock[i].y*self.blockSize;
                 self.canvas.ctx.fillStyle="rgba(0,0,0,0.3)";
-                self.canvas.ctx.fillRect(x, y, self.blockSize, self.blockSize)
+                self.canvas.ctx.fillRect(x, y,self.blockSize, self.blockSize)
             }
         },
-        //
-        //绘制基础网格
-        drawBase:function(){
+        //清除画布
+        clearCanvas:function(){
+          this.canvas.ctx.clearRect(0,0,this.canvasW,this.canvasH);
+        },
+        //第一次构建基础网格
+        buildBase:function(){
             var self=this;
             self.canvasW=self.blockSize*self.rows,
             self.canvasH=self.blockSize*self.cols,
@@ -141,11 +164,9 @@
             self.terisNode.style.height=self.canvasH+"px";
             self.terisNode.appendChild(self.canvas);
 
-            //绘制底色
+
             self.canvas.ctx=self.canvas.getContext("2d")
             self.canvas.ctx.beginPath();
-            self.canvas.ctx.fillStyle="rgba(0,0,0,0.1)";
-            self.canvas.ctx.fillRect(0, 0, self.canvasW, self.canvasH);
             // 绘制网格
             for(var i=1;i<self.rows;i++){
                 self.canvas.ctx.moveTo(self.blockSize*i,0);
@@ -158,27 +179,37 @@
                 self.canvas.ctx.lineWidth = 1;
             }
             self.canvas.ctx.strokeStyle="rgba(0,0,0,0.2)";
+            self.drawBase();
+        },
+        //每一次重新绘制基础网格
+        drawBase:function(){
+            var self=this;
+            self.canvas.ctx.fillStyle="rgba(0,0,0,0.1)";
+            self.canvas.ctx.fillRect(0, 0, self.canvasW, self.canvasH);
             self.canvas.ctx.stroke();
         },
 
         // 播放开始
         play:function(){
             var self=this;
-            //随机生成一个形态的坐标 并画出相应的形态
-            self.drawBlock();
-            //根据当前 activeBlock 坐标画出其真实形态
+            //随机生成一个形态的坐标
+            self.builBlockXY();
             self.drawBlockCanvas();
+
             self.time=setInterval(function(){
-                // 调用随机生成形态的函数
-                // 调用修改dataArr的函数
-                self.changeBlocwkXY(self.activeBlock);
-                // 调用实时绘制canvas的函数
+                // 清空画布
+                self.clearCanvas();
+                // 绘制基础底色和网格
+                self.drawBase();
+                // 生成下一个方块的坐标
+                self.changeBlocwkXY(self.activeBlock)
+                // 根据方块坐标绘制新的方块
                 self.drawBlockCanvas();
-            },1000)
+            },1000);
         },
         _init:function(){
             var self=this;
-            self.drawBase();
+            self.buildBase();
             self.play();
         }
     }
