@@ -33,9 +33,9 @@
             [
                 //真实
              // [0,1,2,3,4,5,6,7,8,9],
-                [0,0,0,0,1,0,0,0,0,0],
-                [0,0,0,0,1,1,0,0,0,0],
-                [0,0,0,0,0,1,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0,0,0],
@@ -125,21 +125,39 @@
                 if(nextActiveBlockXY[i].y+1>=self.cols){
                     //更新dataArr对应位置的元素为1
                     self.updateDataArr(activeBlockXY,1);
+                    //重新生成新的方块坐标
+                    self.builBlockXY();
                     moveFlag=false;
-                    self.timeFlag=true;
+                    // self.timeFlag=true;
                     break;
                 }
-                // 判断是否遇到dataArr中值为1的元素，并且超过
-
+                // 判断是否遇到dataArr中值为1的元素
+                // debugger
+                var rowIndex=nextActiveBlockXY[i].y+1;
+                var colIndex=nextActiveBlockXY[i].x;
+                if(self.dataArr[rowIndex] && self.dataArr[rowIndex][colIndex]){
+                    if(self.dataArr[rowIndex][colIndex]==1){
+                        //更新dataArr对应位置的元素为1
+                        self.updateDataArr(activeBlockXY,1);
+                        //重新生成新的方块坐标
+                        self.builBlockXY();
+                        moveFlag=false;
+                        break;
+                    }
+                }
             }
             if(moveFlag){
+                // 当前方块坐标往下移动一步
                 for(var i=0,l=activeBlockXY.length;i<l;i++){
                     activeBlockXY[i].y+=1;
                 }
             }
         },
-        // 根据坐标绘制一个小方格
-        // draw
+        // 根据坐标以及宽高绘制一个小方格
+        drawSmBlockCanvas:function(x,y,w,h){
+            this.canvas.ctx.fillStyle="rgba(0,0,0,0.3)";
+            this.canvas.ctx.fillRect(x, y,w, h);
+        },
         //根据当前 activeBlock 坐标画出其真实形态
         drawBlockCanvas:function(){
             var self=this;
@@ -147,20 +165,20 @@
             for(var i=0,l=activeBlock.length;i<l;i++){
                 var x=activeBlock[i].x*self.blockSize;
                 var y=activeBlock[i].y*self.blockSize;
-                self.canvas.ctx.fillStyle="rgba(0,0,0,0.3)";
-                self.canvas.ctx.fillRect(x, y,self.blockSize, self.blockSize)
+                self.drawSmBlockCanvas(x,y,self.blockSize, self.blockSize);
             }
         },
         //根据dataArr画出元素值为1的小方块
         drawDataArrCanvas:function(){
-            var self=this;
+          var self=this;
+          // debugger
           for(var i=0,l=self.dataArr.length;i<l;i++){
               var arr=self.dataArr[i];
-            for(var j=0,l1=arr;j<l1;j++){
+            for(var j=0,l1=arr.length;j<l1;j++){
                 if(arr[j]==1){
                     var x=j*self.blockSize;
-                    var y=i;
-
+                    var y=i*self.blockSize;
+                    self.drawSmBlockCanvas(x,y,self.blockSize,self.blockSize);
                 }
             }
           }
@@ -221,12 +239,14 @@
                 // 绘制基础底色和网格
                 self.drawBase();
                 // 生成下一个方块的坐标
-                self.changeBlocwkXY(self.activeBlock)
+                self.changeBlocwkXY(self.activeBlock);
+                // 绘制dataArr中值为1的小方块
+                self.drawDataArrCanvas();
                 // 根据方块坐标绘制新的方块
                 self.drawBlockCanvas();
-                if(self.timeFlag){
-                    clearInterval(self.time);
-                }
+                // if(self.timeFlag){
+                //     clearInterval(self.time);
+                // }
             },self.speedTime);
         },
         _init:function(){
