@@ -137,6 +137,9 @@
                 var colIndex=nextActiveBlockXY[i].x;
                 if(self.dataArr[rowIndex] && self.dataArr[rowIndex][colIndex]){
                     if(self.dataArr[rowIndex][colIndex]==1){
+                        //判断是否到达顶部 判断方式：dataArr[0][nextActiveBlockXY[i].y] dataArr[1][nextActiveBlockXY[i].y]
+                        
+
                         //更新dataArr对应位置的元素为1
                         self.updateDataArr(activeBlockXY,1);
                         //重新生成新的方块坐标
