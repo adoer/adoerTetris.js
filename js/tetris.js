@@ -14,9 +14,10 @@
         canvasH:this.blockSize*20,
 
         downFlag:true,
+        drawCanvasBlockFlag:true,
 
         //下落时间间隔 初始为每隔1000ms下落一个小方格。
-        speedTime:1000,
+        speedTime:50,
 
         // 当前活动块对象
         activeBlock:[
@@ -59,8 +60,9 @@
             var blockRandomNum = Math.floor(Math.random()*7);
             //随机产生0-3(上，右，下，左)，代表4个方向的形态
             var dirRandomNum = Math.floor(Math.random()*4);
-            //先用一个S形态 的 上形态来试验一下
             blockRandomNum=0;
+            dirRandomNum=0;
+            //先用一个S形态 的 上形态来试验一下
             switch (blockRandomNum){
                 // S形态
                 case 0:{
@@ -97,7 +99,44 @@
                             ]
                         } break;
                     }
-                }
+                } break;
+                //L形态
+                case 1:{
+                    switch (dirRandomNum){
+                        case 0:{
+                            self.activeBlock = [
+                                {x: 4, y: -2},
+                                {x: 4, y: -1},
+                                {x: 4, y: 0},
+                                {x: 5, y: 0},
+                            ]
+                        } break;
+                        case 1:{
+                            self.activeBlock = [
+                                {x: 3, y: 0},
+                                {x: 3, y: -1},
+                                {x: 4, y: 0},
+                                {x: 5, y: 0},
+                            ]
+                        } break;
+                        case 2:{
+                            self.activeBlock = [
+                                {x: 4, y: -2},
+                                {x: 5, y: -2},
+                                {x: 5, y: -1},
+                                {x: 5, y: 0},
+                            ]
+                        } break;
+                        case 3:{
+                            self.activeBlock = [
+                                {x: 3, y: 0},
+                                {x: 4, y: 0},
+                                {x: 5, y: -1},
+                                {x: 5, y: 0},
+                            ]
+                        } break;
+                    }
+                } break;
             }
         },
         // 更新dataArr对应位置元素值为1或者0
@@ -106,7 +145,9 @@
             // Y为第几行，X为第几列。
             for(var i1=0,l1=self.dataArr.length;i1<l1;i1++){
                 for(var j=0,l2=dataXY.length;j<l2;j++){
-                    self.dataArr[dataXY[j].y][dataXY[j].x]=value;
+                    if(self.dataArr[dataXY[j].y]){
+                        self.dataArr[dataXY[j].y][dataXY[j].x]=value;
+                    }
                 }
             }
         },
@@ -114,6 +155,7 @@
         changeBlocwkXY:function(activeBlockXY){
             var self=this;
             var moveFlag=true;
+            var returnFlag=true;
             var nextActiveBlockXY=activeBlockXY.slice();
             /*
                 判断下一个nextActiveBlockXY中的任意一个小方格的Y坐标
@@ -131,22 +173,32 @@
                     // self.timeFlag=true;
                     break;
                 }
+
                 // 判断是否遇到dataArr中值为1的元素
-                // debugger
                 var rowIndex=nextActiveBlockXY[i].y+1;
                 var colIndex=nextActiveBlockXY[i].x;
-                if(self.dataArr[rowIndex] && self.dataArr[rowIndex][colIndex]){
-                    if(self.dataArr[rowIndex][colIndex]==1){
-                        //判断是否到达顶部 判断方式：dataArr[0][nextActiveBlockXY[i].y] dataArr[1][nextActiveBlockXY[i].y]
-                        
+                if(self.dataArr[rowIndex] && self.dataArr[rowIndex][colIndex]==1){
+                    //更新dataArr对应位置的元素为1
+                    self.updateDataArr(activeBlockXY,1);
+                    //重新生成新的方块坐标
+                    self.builBlockXY();
 
-                        //更新dataArr对应位置的元素为1
-                        self.updateDataArr(activeBlockXY,1);
-                        //重新生成新的方块坐标
-                        self.builBlockXY();
-                        moveFlag=false;
-                        break;
+                    //判断是否到达顶部
+                    if(self.dataArr[0][activeBlockXY[0].x]==1 || self.dataArr[0][activeBlockXY[1].x]==1){
+                        debugger
+                        self.drawCanvasBlockFlag=false;
+                        self.timeFlag==false;
+                        console.log("游戏结束");
                     }
+                    if(self.dataArr[0][activeBlockXY[2].x]==1 || self.dataArr[0][activeBlockXY[3].x]==1){
+                        debugger
+                        self.drawCanvasBlockFlag=false;
+                        self.timeFlag==false;
+                        console.log("游戏结束");
+                    }
+
+                    moveFlag=false;
+                    break;
                 }
             }
             if(moveFlag){
@@ -169,6 +221,11 @@
                 var x=activeBlock[i].x*self.blockSize;
                 var y=activeBlock[i].y*self.blockSize;
                 self.drawSmBlockCanvas(x,y,self.blockSize, self.blockSize);
+                // if(self.dataArr[0][activeBlock[i].x]==1){
+                //     self.timeFlag==false;
+                //     console.log("游戏结束");
+                //     break;
+                // }
             }
         },
         //根据dataArr画出元素值为1的小方块
@@ -235,21 +292,21 @@
             //随机生成一个形态的坐标
             self.builBlockXY();
             self.drawBlockCanvas();
-
             self.time=setInterval(function(){
-                // 清空画布
-                self.clearCanvas();
-                // 绘制基础底色和网格
-                self.drawBase();
-                // 生成下一个方块的坐标
-                self.changeBlocwkXY(self.activeBlock);
-                // 绘制dataArr中值为1的小方块
-                self.drawDataArrCanvas();
-                // 根据方块坐标绘制新的方块
-                self.drawBlockCanvas();
-                // if(self.timeFlag){
-                //     clearInterval(self.time);
-                // }
+                if(!self.timeFlag){
+                    // 清空画布
+                    self.clearCanvas();
+                    // 绘制基础底色和网格
+                    self.drawBase();
+                    // 生成下一个方块的坐标
+                    self.changeBlocwkXY(self.activeBlock);
+                    // 绘制dataArr中值为1的小方块
+                    self.drawDataArrCanvas();
+                    if(self.drawCanvasBlockFlag){
+                        // 根据方块坐标绘制新的方块
+                        self.drawBlockCanvas();
+                    }
+                }
             },self.speedTime);
         },
         _init:function(){
