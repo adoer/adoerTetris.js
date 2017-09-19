@@ -359,19 +359,38 @@
             var self=this;
             //检测移动后是否碰壁 或者碰到dataArr中值为1的元素 如果没有碰壁才进行移动坐标
             var chexkArr=self.activeBlock.slice();
-            for(var i=0,l=chexkArr.length;i<l;i++){
-                if(self.dataArr[chexkArr[i].y][chexkArr[i]-1]==0){
-
+            var moveFalg=true;
+            // for(var i=0,l=chexkArr.length;i<l;i++){
+            //     if(self.dataArr[chexkArr[i].y][chexkArr[i]-1]<0){
+            //         moveFalg=false;
+            //     }
+            //     if(self.dataArr[chexkArr[i].y][chexkArr[i]+1]>(self.rows-1)){
+            //         moveFalg=false;
+            //     }
+            // }
+            if(moveFalg){
+                // 清空画布
+                self.clearCanvas();
+                // 绘制基础底色和网格
+                self.drawBase();
+                //绘制向左 或向右移动后的 新的方块
+                for(var i=0,l=self.activeBlock.length;i<l;i++){
+                    if(direction=="right"){
+                        self.activeBlock[i].x+=1;
+                    }else if(direction=="left"){
+                        self.activeBlock[i].x-=1;
+                    }
+                    var x=self.activeBlock[i].x*self.blockSize;
+                    var y=self.activeBlock[i].y*self.blockSize;
+                    self.drawSmBlockCanvas(x,y,self.blockSize, self.blockSize);
                 }
-            }
-            if(direction=="right"){
-
-            }else if(direction=="left"){
-
+                // 绘制dataArr中值为1的小方块
+                self.drawDataArrCanvas();
             }
         },
         // 监听键盘上下左右事件
         bindEvent:function(){
+            var self=this;
             document.addEventListener("keydown",function(e){
                 // 监听方向键
                 // 上
@@ -384,10 +403,12 @@
                 }
                 // 左
                 if(e.keyCode=="37"){
+                    self.changeLeftRightBlockXY("left");
                     console.log("左");
                 }
                 // 右
                 if(e.keyCode=="39"){
+                    self.changeLeftRightBlockXY("right");
                     console.log("右");
                 }
             });
