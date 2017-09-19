@@ -51,7 +51,7 @@
             [0,0,0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0,0],
         ],
-        // 随机生成 一种方块 （一共七种 S，Z，L，J，I，O，T 每一种有4种方向(上，右，下，左),一共有28种形态）
+        // 随机生成 一种方块 （一共七种 S，Z，L，J，I，O，T 每一种有4种方向(上，右，下，左)。
         builBlockXY:function(){
             var self=this;
             //随机产生0-6数组，代表7种形态。
@@ -357,36 +357,67 @@
         // 左右移动时改变activeBlock的坐标 并判断是否碰壁 或者碰到dataArr中值为1的元素
         changeLeftRightBlockXY:function(direction){
             var self=this;
-            //检测移动后是否碰壁 或者碰到dataArr中值为1的元素 如果没有碰壁才进行移动坐标
-            var chexkArr=self.activeBlock.slice();
-            var moveFalg=true;
-            // for(var i=0,l=chexkArr.length;i<l;i++){
-            //     if(self.dataArr[chexkArr[i].y][chexkArr[i]-1]<0){
-            //         moveFalg=false;
-            //     }
-            //     if(self.dataArr[chexkArr[i].y][chexkArr[i]+1]>(self.rows-1)){
-            //         moveFalg=false;
-            //     }
-            // }
-            if(moveFalg){
-                // 清空画布
-                self.clearCanvas();
-                // 绘制基础底色和网格
-                self.drawBase();
-                //绘制向左 或向右移动后的 新的方块
+            if(direction==="right"){
+                //检测移动后是否碰壁 或者碰到dataArr中值为1的元素 如果没有碰壁才进行移动坐标
+                var moveRightFalg=true;
                 for(var i=0,l=self.activeBlock.length;i<l;i++){
-                    if(direction=="right"){
-                        self.activeBlock[i].x+=1;
-                    }else if(direction=="left"){
-                        self.activeBlock[i].x-=1;
+                    //检测是否碰到dataArr中值为1的元素
+                    if(self.dataArr[self.activeBlock[i].y] && self.dataArr[self.activeBlock[i].y][self.activeBlock[i].x+1]==1){
+                        moveRightFalg=false;
                     }
-                    var x=self.activeBlock[i].x*self.blockSize;
-                    var y=self.activeBlock[i].y*self.blockSize;
-                    self.drawSmBlockCanvas(x,y,self.blockSize, self.blockSize);
+                    //检测碰壁
+                    if(self.activeBlock[i].x+1>self.rows-1){
+                        moveRightFalg=false;
+                    }
                 }
-                // 绘制dataArr中值为1的小方块
-                self.drawDataArrCanvas();
+                if(moveRightFalg){
+                    // 清空画布
+                    self.clearCanvas();
+                    // 绘制基础底色和网格
+                    self.drawBase();
+                    //绘制向左 或向右移动后的 新的方块
+                    for(var i=0,l=self.activeBlock.length;i<l;i++){
+
+                        self.activeBlock[i].x+=1;
+
+                        var x=self.activeBlock[i].x*self.blockSize;
+                        var y=self.activeBlock[i].y*self.blockSize;
+                        self.drawSmBlockCanvas(x,y,self.blockSize, self.blockSize);
+                    }
+                    // 绘制dataArr中值为1的小方块
+                    self.drawDataArrCanvas();
+                }
+            }else if(direction==="left"){
+                //检测移动后是否碰壁 或者碰到dataArr中值为1的元素 如果没有碰壁才进行移动坐标
+                var moveLeftFalg=true;
+                for(var i=0,l=self.activeBlock.length;i<l;i++){
+                    //检测是否碰到dataArr中值为1的元素
+                    if(self.dataArr[self.activeBlock[i].y] && self.dataArr[self.activeBlock[i].y][self.activeBlock[i].x-1]==1){
+                        moveLeftFalg=false;
+                    }
+                    //检测碰壁
+                    if(self.activeBlock[i].x-1<0){
+                        moveLeftFalg=false;
+                    }
+                }
+                if(moveLeftFalg){
+                    // 清空画布
+                    self.clearCanvas();
+                    // 绘制基础底色和网格
+                    self.drawBase();
+                    //绘制向左 或向右移动后的 新的方块
+                    for(var i=0,l=self.activeBlock.length;i<l;i++){
+                        self.activeBlock[i].x-=1;
+
+                        var x=self.activeBlock[i].x*self.blockSize;
+                        var y=self.activeBlock[i].y*self.blockSize;
+                        self.drawSmBlockCanvas(x,y,self.blockSize, self.blockSize);
+                    }
+                    // 绘制dataArr中值为1的小方块
+                    self.drawDataArrCanvas();
+                }
             }
+
         },
         // 监听键盘上下左右事件
         bindEvent:function(){
@@ -395,21 +426,30 @@
                 // 监听方向键
                 // 上
                 if(e.keyCode=="38"){
-                    console.log("上");
+
                 }
                 // 下
                 if(e.keyCode=="40"){
-                    console.log("下");
+                    // 清空画布
+                    self.clearCanvas();
+                    // 绘制基础底色和网格
+                    self.drawBase();
+                    // 生成下一个方块的坐标
+                    self.changeBlockXY();
+                    // 绘制dataArr中值为1的小方块
+                    self.drawDataArrCanvas();
+                    if(self.drawCanvasBlockFlag){
+                        // 根据方块坐标绘制新的方块
+                        self.drawBlockCanvas();
+                    }
                 }
                 // 左
                 if(e.keyCode=="37"){
                     self.changeLeftRightBlockXY("left");
-                    console.log("左");
                 }
                 // 右
                 if(e.keyCode=="39"){
                     self.changeLeftRightBlockXY("right");
-                    console.log("右");
                 }
             });
         },
@@ -490,6 +530,7 @@
                         self.drawBlockCanvas();
                     }
                 }
+                console.log(self.time);
             },self.speedTime);
         },
         _init:function(){
