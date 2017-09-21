@@ -12,7 +12,6 @@
         canvas:null,
         canvasW:this.blockSize*10,
         canvasH:this.blockSize*20,
-
         // img:new Image(),
         img_src:"",
         downFlag:true,
@@ -22,14 +21,141 @@
         speedTime:1000,
 
         // 当前活动块对象
-        activeBlock:[
-            {x:0,y:0},
-            {x:0,y:0},
-            {x:0,y:0},
-            {x:0,y:0},
-        ],
+        activeBlock:[],
         time:null,
         timeFlag:true,
+        // shapeArr:["S","Z","L","J","I","O","T"],
+        //随机形态映射数组
+        shapeArr:["S","Z"],
+        //随机方向映射数组
+        dirArr:["up","right","down","left"],
+        //深拷贝
+        deepCopy: function(p, c) {
+            var self=this;
+            var c = c || {};
+            for (var i in p) {
+                if (typeof p[i] === 'object') {
+                    c[i] = (p[i].constructor === Array) ? [] : {};
+                    self.deepCopy(p[i], c[i]);
+                } else {
+                    c[i] = p[i];
+                }
+            }
+            return c;
+        },
+        //各个形态方块原始数据
+        blockData:{
+            // S形态
+            S:{
+                up:{
+                    xy:[
+                        {x: 4, y: 0},
+                        {x: 3, y: 0},
+                        {x: 4, y: -1},
+                        {x: 5, y: -1},
+                    ],
+                    dir:"up",
+                    nextDir:"right",
+                    shape:"S",
+                    color:"purple",
+                    value:1
+                },
+                right:{
+                    xy:[
+                        {x: 4, y: -1},
+                        {x: 4, y: -2},
+                        {x: 5, y: -1},
+                        {x: 5, y: 0},
+                    ],
+                    dir:"right",
+                    nextDir:"down",
+                    shape:"S",
+                    color:"purple",
+                    value:1
+                },
+                down:{
+                    xy:[
+                        {x: 4, y: 0},
+                        {x: 3, y: 0},
+                        {x: 4, y: -1},
+                        {x: 5, y: -1},
+                    ],
+                    dir:"down",
+                    nextDir:"left",
+                    shape:"S",
+                    color:"purple",
+                    value:1
+                },
+                left:{
+                    xy:[
+                        {x: 4, y: -1},
+                        {x: 4, y: -2},
+                        {x: 5, y: -1},
+                        {x: 5, y: 0},
+                    ],
+                    dir:"left",
+                    nextDir:"up",
+                    shape:"S",
+                    color:"purple",
+                    value:1
+                }
+            },
+            // Z形态
+            Z:{
+                up:{
+                    xy:[
+                        {x: 3, y: -1},
+                        {x: 4, y: -1},
+                        {x: 4, y: 0},
+                        {x: 5, y: 0},
+                    ],
+                    dir:"up",
+                    nextDir:"right",
+                    shape:"Z",
+                    color:"green",
+                    value:2
+                },
+                right:{
+                    xy:[
+                        {x: 5, y: -2},
+                        {x: 5, y: -1},
+                        {x: 4, y: -1},
+                        {x: 4, y: 0},
+                    ],
+                    dir:"right",
+                    nextDir:"down",
+                    shape:"Z",
+                    color:"green",
+                    value:2
+                },
+                down:{
+                    xy:[
+                        {x: 3, y: -1},
+                        {x: 4, y: -1},
+                        {x: 4, y: 0},
+                        {x: 5, y: 0},
+                    ],
+                    dir:"down",
+                    nextDir:"left",
+                    shape:"Z",
+                    color:"green",
+                    value:2
+                },
+                left:{
+                    xy:[
+                        {x: 5, y: -2},
+                        {x: 5, y: -1},
+                        {x: 4, y: -1},
+                        {x: 4, y: 0},
+                    ],
+                    dir:"left",
+                    nextDir:"up",
+                    shape:"Z",
+                    color:"green",
+                    value:2
+                }
+            }
+        },
         // 创建数组
         dataArr: [
             //真实
@@ -57,13 +183,16 @@
         builBlockXY:function(){
             var self=this;
             //随机产生0-6数组，代表7种形态。
-            var blockRandomNum = Math.floor(Math.random()*7);
+            var blockRandomNum = Math.floor(Math.random()*2);
             //随机产生0-3(上，右，下，左)，代表4个方向的形态
             var dirRandomNum = Math.floor(Math.random()*4);
-            // blockRandomNum=0;
-            // dirRandomNum=3;
+            //初始坐标
+            var shape=self.shapeArr[blockRandomNum];
+            var dir=self.dirArr[dirRandomNum];
+            self.activeBlock = self.deepCopy(self.blockData[shape][dir]);
+
             //先用一个S形态 的 上形态来试验一下
-            switch (blockRandomNum){
+            /*switch (blockRandomNum){
                 // S形态
                 case 0:{
                     switch (dirRandomNum){
@@ -371,7 +500,7 @@
                         } break;
                     }
                 } break;
-            }
+            }*/
         },
         // 更新dataArr对应位置元素值为1或者0
         updateDataArr:function(dataXY,value){
@@ -530,28 +659,33 @@
         */
         rotate:function(){
             var self=this;
-            var activeBlock=self.activeBlock.xy;
-            var activeBlockCopy=self.activeBlock.xy.slice();
             var shape=self.activeBlock.shape;
-            for(var i=0,l=activeBlock.length;i<l;i++){
-                //找出旋转中心的坐标 默认方块的第一个为中心
-                // debugger
-                // if(shape!=="O" && i>0){
-                //     activeBlock[i].x=activeBlockCopy[i].y-activeBlockCopy[0].y+activeBlockCopy[0].x;
-                //     activeBlock[i].y=activeBlockCopy[0].x-activeBlockCopy[i].x+activeBlockCopy[0].y;
-                // }
-                //向右旋转90°
-            }
-
             if(shape!=="O"){
-                // // 清空画布
-                // self.clearCanvas();
-                // // 绘制基础底色和网格
-                // self.drawBase();
-                // // 绘制dataArr中值为1的小方块
-                // self.drawDataArrCanvas();
-                // // 根据方块坐标绘制新的方块
-                // self.drawBlockCanvas();
+                var activeBlock=self.activeBlock;
+                var activeBlockXY=activeBlock.xy;
+                //判断activeBlock比初始时下移了多少 左移或右移了多少
+                //originBlock为初始的activeBlock
+                var originBlockXY=self.blockData[activeBlock.shape][activeBlock.dir].xy;
+                var offset_y=activeBlockXY[0].y-originBlockXY[0].y;
+                var offset_x=activeBlockXY[0].x-originBlockXY[0].x;
+
+                //下一个 nextBlock
+                var nextBlock=self.deepCopy(self.blockData[activeBlock.shape][activeBlock.nextDir]);
+                var nextBlockXY=nextBlock.xy;
+                var flag=true;
+                for(var i=0,l=nextBlockXY.length;i<l;i++){
+                    nextBlockXY[i].x+=offset_x;
+                    nextBlockXY[i].y+=offset_y;
+                    var rowIndex=nextBlockXY[i].y+1;
+                    var colIndex=nextBlockXY[i].x;
+                    if(self.dataArr[rowIndex] && self.dataArr[rowIndex][colIndex]>=1){
+                        flag=false;
+                        break;
+                    }
+                }
+                if(flag){
+                    self.activeBlock=nextBlock;
+                }
             }
         },
         // 监听键盘上下左右事件
@@ -562,6 +696,16 @@
                 // 上
                 if(e.keyCode=="38"){
                     self.rotate();
+                    // 清空画布
+                    self.clearCanvas();
+                    // 绘制基础底色和网格
+                    self.drawBase();
+                    // 绘制dataArr中值大于1的小方块
+                    self.drawDataArrCanvas();
+                    if(self.drawCanvasBlockFlag){
+                        // 根据方块坐标绘制新的方块
+                        self.drawBlockCanvas();
+                    }
                 }
                 // 下
                 if(e.keyCode=="40"){
