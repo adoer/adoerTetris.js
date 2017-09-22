@@ -1,32 +1,31 @@
+"use strict"
 +(function(){
     var Tetris=function(opt) {
         this.blockSize=opt.blockSize;
+        this.rows=opt.rows || 10;
+        this.cols=opt.cols || 18;
         this.terisNode=document.getElementById(opt.id);
         this._init();
     }
     Tetris.prototype={
         blockSize:0,
         terisNode:null,
-        rows:10,
-        cols:18,
+        rows:0,
+        cols:0,
         canvas:null,
         canvasW:this.blockSize*10,
         canvasH:this.blockSize*20,
         // img:new Image(),
-        img_src:"",
         downFlag:true,
         drawCanvasBlockFlag:true,
-
         // 下落时间间隔 初始为每隔1000ms下落一个小方格。
         speedTime:1000,
-
         // 当前活动块对象
         activeBlock:[],
         time:null,
         timeFlag:true,
-        // shapeArr:["S","Z","L","J","I","O","T"],
         //随机形态映射数组
-        shapeArr:["S","Z"],
+        shapeArr:["S","Z","L","J","I","O","T"],
         //随机方向映射数组
         dirArr:["up","right","down","left"],
         //深拷贝
@@ -44,128 +43,17 @@
             return c;
         },
         //各个形态方块原始数据
-        blockData:{
-            // S形态
-            S:{
-                up:{
-                    xy:[
-                        {x: 4, y: 0},
-                        {x: 3, y: 0},
-                        {x: 4, y: -1},
-                        {x: 5, y: -1},
-                    ],
-                    dir:"up",
-                    nextDir:"right",
-                    shape:"S",
-                    color:"purple",
-                    value:1
-                },
-                right:{
-                    xy:[
-                        {x: 4, y: -1},
-                        {x: 4, y: -2},
-                        {x: 5, y: -1},
-                        {x: 5, y: 0},
-                    ],
-                    dir:"right",
-                    nextDir:"down",
-                    shape:"S",
-                    color:"purple",
-                    value:1
-                },
-                down:{
-                    xy:[
-                        {x: 4, y: 0},
-                        {x: 3, y: 0},
-                        {x: 4, y: -1},
-                        {x: 5, y: -1},
-                    ],
-                    dir:"down",
-                    nextDir:"left",
-                    shape:"S",
-                    color:"purple",
-                    value:1
-                },
-                left:{
-                    xy:[
-                        {x: 4, y: -1},
-                        {x: 4, y: -2},
-                        {x: 5, y: -1},
-                        {x: 5, y: 0},
-                    ],
-                    dir:"left",
-                    nextDir:"up",
-                    shape:"S",
-                    color:"purple",
-                    value:1
-                }
-            },
-            // Z形态
-            Z:{
-                up:{
-                    xy:[
-                        {x: 3, y: -1},
-                        {x: 4, y: -1},
-                        {x: 4, y: 0},
-                        {x: 5, y: 0},
-                    ],
-                    dir:"up",
-                    nextDir:"right",
-                    shape:"Z",
-                    color:"green",
-                    value:2
-                },
-                right:{
-                    xy:[
-                        {x: 5, y: -2},
-                        {x: 5, y: -1},
-                        {x: 4, y: -1},
-                        {x: 4, y: 0},
-                    ],
-                    dir:"right",
-                    nextDir:"down",
-                    shape:"Z",
-                    color:"green",
-                    value:2
-                },
-                down:{
-                    xy:[
-                        {x: 3, y: -1},
-                        {x: 4, y: -1},
-                        {x: 4, y: 0},
-                        {x: 5, y: 0},
-                    ],
-                    dir:"down",
-                    nextDir:"left",
-                    shape:"Z",
-                    color:"green",
-                    value:2
-                },
-                left:{
-                    xy:[
-                        {x: 5, y: -2},
-                        {x: 5, y: -1},
-                        {x: 4, y: -1},
-                        {x: 4, y: 0},
-                    ],
-                    dir:"left",
-                    nextDir:"up",
-                    shape:"Z",
-                    color:"green",
-                    value:2
-                }
-            }
-        },
+        blockData:null,
         // 创建数组
-        dataArr: [
+        dataArr1: [
             //真实
          // [0,1,2,3,4,5,6,7,8,9],
+            [0,0,0,1,1,1,0,0,0,0],
+            [0,0,0,1,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,1,0,0,0,0,0],
+            [0,0,0,0,1,0,0,0,0,0],
+            [0,0,0,0,1,1,0,0,0,0],
             [0,0,0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0,0],
@@ -179,338 +67,442 @@
             [0,0,0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0,0],
         ],
+        dataArr:[],
+        // 创建blockData
+        buildBlockData:function(){
+            var self=this;
+            var r=self.rows;
+            //rows为奇数 中心点为 (r-1)/2 为偶数时中心点为(r/2)-1
+            var n=r%2===0?(r/2)-1:(r-1)/2;
+            self.blockData={
+                // S形态
+                S:{
+                    up:{
+                        xy:[
+                            {x: n, y: 0},
+                            {x: n-1, y: 0},
+                            {x: n, y: -1},
+                            {x: n+1, y: -1},
+                        ],
+                        dir:"up",
+                        nextDir:"right",
+                        shape:"S",
+                        color:"purple",
+                        value:1
+                    },
+                    right:{
+                        xy:[
+                            {x: n, y: -1},
+                            {x: n, y: -2},
+                            {x: n+1, y: -1},
+                            {x: n+1, y: 0},
+                        ],
+                        dir:"right",
+                        nextDir:"down",
+                        shape:"S",
+                        color:"purple",
+                        value:1
+                    },
+                    down:{
+                        xy:[
+                            {x: n, y: 0},
+                            {x: n-1, y: 0},
+                            {x: n, y: -1},
+                            {x: n+1, y: -1},
+                        ],
+                        dir:"down",
+                        nextDir:"left",
+                        shape:"S",
+                        color:"purple",
+                        value:1
+                    },
+                    left:{
+                        xy:[
+                            {x: n, y: -1},
+                            {x: n, y: -2},
+                            {x: n+1, y: -1},
+                            {x: n+1, y: 0},
+                        ],
+                        dir:"left",
+                        nextDir:"up",
+                        shape:"S",
+                        color:"purple",
+                        value:1
+                    }
+                },
+                // Z形态
+                Z:{
+                    up:{
+                        xy:[
+                            {x: n-1, y: -1},
+                            {x: n, y: -1},
+                            {x: n, y: 0},
+                            {x: n+1, y: 0},
+                        ],
+                        dir:"up",
+                        nextDir:"right",
+                        shape:"Z",
+                        color:"green",
+                        value:2
+                    },
+                    right:{
+                        xy:[
+                            {x: n+1, y: -2},
+                            {x: n+1, y: -1},
+                            {x: n, y: -1},
+                            {x: n, y: 0},
+                        ],
+                        dir:"right",
+                        nextDir:"down",
+                        shape:"Z",
+                        color:"green",
+                        value:2
+                    },
+                    down:{
+                        xy:[
+                            {x: n-1, y: -1},
+                            {x: n, y: -1},
+                            {x: n, y: 0},
+                            {x: n+1, y: 0},
+                        ],
+                        dir:"down",
+                        nextDir:"left",
+                        shape:"Z",
+                        color:"green",
+                        value:2
+                    },
+                    left:{
+                        xy:[
+                            {x: n+1, y: -2},
+                            {x: n+1, y: -1},
+                            {x: n, y: -1},
+                            {x: n, y: 0},
+                        ],
+                        dir:"left",
+                        nextDir:"up",
+                        shape:"Z",
+                        color:"green",
+                        value:2
+                    }
+                },
+                // L形态
+                L:{
+                    up:{
+                        xy:[
+                            {x: n, y: -2},
+                            {x: n, y: -1},
+                            {x: n, y: 0},
+                            {x: n+1, y: 0},
+                        ],
+                        dir:"up",
+                        nextDir:"right",
+                        shape:"L",
+                        color:"blue",
+                        value:3
+                    },
+                    right:{
+                        xy:[
+                            {x: n-1, y: 0},
+                            {x: n-1, y: -1},
+                            {x: n, y: -1},
+                            {x: n+1, y: -1},
+                        ],
+                        dir:"right",
+                        nextDir:"down",
+                        shape:"L",
+                        color:"blue",
+                        value:3
+                    },
+                    down:{
+                        xy:[
+                            {x: n, y: -2},
+                            {x: n+1, y: -2},
+                            {x: n+1, y: -1},
+                            {x: n+1, y: 0},
+                        ],
+                        dir:"down",
+                        nextDir:"left",
+                        shape:"L",
+                        color:"blue",
+                        value:3
+                    },
+                    left:{
+                        xy:[
+                            {x: n-1, y: 0},
+                            {x: n, y: 0},
+                            {x: n+1, y: -1},
+                            {x: n+1, y: 0},
+                        ],
+                        dir:"left",
+                        nextDir:"up",
+                        shape:"L",
+                        color:"blue",
+                        value:3
+                    }
+                },
+                // J形态
+                J:{
+                    up:{
+                        xy:[
+                            {x: n+1, y: -2},
+                            {x: n+1, y: -1},
+                            {x: n+1, y: 0},
+                            {x: n, y: 0},
+                        ],
+                        dir:"up",
+                        nextDir:"right",
+                        shape:"J",
+                        color:"pink",
+                        value:4
+                    },
+                    right:{
+                        xy:[
+                            {x: n, y: -1},
+                            {x: n, y: 0},
+                            {x: n+1, y: 0},
+                            {x: n+2, y: 0},
+                        ],
+                        dir:"right",
+                        nextDir:"down",
+                        shape:"J",
+                        color:"pink",
+                        value:4
+                    },
+                    down:{
+                        xy:[
+                            {x: n, y: -2},
+                            {x: n+1, y: -2},
+                            {x: n, y: -1},
+                            {x: n, y: 0},
+                        ],
+                        dir:"down",
+                        nextDir:"left",
+                        shape:"J",
+                        color:"pink",
+                        value:4
+                    },
+                    left:{
+                        xy:[
+                            {x: n-1, y: -1},
+                            {x: n, y: -1},
+                            {x: n+1, y: -1},
+                            {x: n+1, y: 0},
+                        ],
+                        dir:"left",
+                        nextDir:"up",
+                        shape:"J",
+                        color:"pink",
+                        value:4
+                    }
+                },
+                // T形态
+                T:{
+                    up:{
+                        xy:[
+                            {x: n, y: -2},
+                            {x: n, y: -1},
+                            {x: n, y: 0},
+                            {x: n+1, y: -1},
+                        ],
+                        dir:"up",
+                        nextDir:"right",
+                        shape:"T",
+                        color:"lightBlue",
+                        value:5
+                    },
+                    right:{
+                        xy:[
+                            {x: n-1, y: -1},
+                            {x: n, y: -1},
+                            {x: n+1, y: -1},
+                            {x: n, y: 0},
+                        ],
+                        dir:"right",
+                        nextDir:"down",
+                        shape:"T",
+                        color:"lightBlue",
+                        value:5
+                    },
+                    down:{
+                        xy:[
+                            {x: n+1, y: -2},
+                            {x: n+1, y: -1},
+                            {x: n, y: -1},
+                            {x: n+1, y: 0},
+                        ],
+                        dir:"down",
+                        nextDir:"left",
+                        shape:"T",
+                        color:"lightBlue",
+                        value:5
+                    },
+                    left:{
+                        xy:[
+                            {x: n, y: -1},
+                            {x: n, y: 0},
+                            {x: n-1, y: 0},
+                            {x: n+1, y: 0},
+                        ],
+                        dir:"left",
+                        nextDir:"up",
+                        shape:"T",
+                        color:"lightBlue",
+                        value:5
+                    }
+                },
+                // O形态
+                O:{
+                    up:{
+                        xy:[
+                            {x: n, y: -1},
+                            {x: n, y: 0},
+                            {x: n+1, y: -1},
+                            {x: n+1, y: 0},
+                        ],
+                        dir:"up",
+                        nextDir:"right",
+                        shape:"O",
+                        color:"yellow",
+                        value:6
+                    },
+                    right:{
+                        xy:[
+                            {x: n, y: -1},
+                            {x: n, y: 0},
+                            {x: n+1, y: -1},
+                            {x: n+1, y: 0},
+                        ],
+                        dir:"right",
+                        nextDir:"down",
+                        shape:"O",
+                        color:"yellow",
+                        value:6
+                    },
+                    down:{
+                        xy:[
+                            {x: n, y: -1},
+                            {x: n, y: 0},
+                            {x: n+1, y: -1},
+                            {x: n+1, y: 0},
+                        ],
+                        dir:"down",
+                        nextDir:"left",
+                        shape:"O",
+                        color:"yellow",
+                        value:6
+                    },
+                    left:{
+                        xy:[
+                            {x: n, y: -1},
+                            {x: n, y: 0},
+                            {x: n+1, y: -1},
+                            {x: n+1, y: 0},
+                        ],
+                        dir:"left",
+                        nextDir:"up",
+                        shape:"O",
+                        color:"yellow",
+                        value:6
+                    }
+                },
+                // I形态
+                I:{
+                    up:{
+                        xy:[
+                            {x: n, y: -3},
+                            {x: n, y: -2},
+                            {x: n, y: -1},
+                            {x: n, y: 0},
+                        ],
+                        dir:"up",
+                        nextDir:"right",
+                        shape:"I",
+                        color:"red",
+                        value:7
+                    },
+                    right:{
+                        xy:[
+                            {x: n-1, y: 0},
+                            {x: n, y: 0},
+                            {x: n+1, y: 0},
+                            {x: n+2, y: 0},
+                        ],
+                        dir:"right",
+                        nextDir:"down",
+                        shape:"I",
+                        color:"red",
+                        value:7
+                    },
+                    down:{
+                        xy:[
+                            {x: n, y: -3},
+                            {x: n, y: -2},
+                            {x: n, y: -1},
+                            {x: n, y: 0},
+                        ],
+                        dir:"down",
+                        nextDir:"left",
+                        shape:"I",
+                        color:"red",
+                        value:7
+                    },
+                    left:{
+                        xy:[
+                            {x: n-1, y: 0},
+                            {x: n, y: 0},
+                            {x: n+1, y: 0},
+                            {x: n+2, y: 0},
+                        ],
+                        dir:"left",
+                        nextDir:"up",
+                        shape:"I",
+                        color:"red",
+                        value:7
+                    }
+                }
+
+            }
+        },
+        // 创建dataArr
+        buildDataArr:function(){
+            var self=this;
+            var bigArr=new Array();
+            for(var i=0;i<self.cols;i++){
+                var smArr=new Array();
+                for(var j=0;j<self.rows;j++){
+                    smArr[j]=0;
+                }
+                bigArr.push(smArr)
+            }
+            self.dataArr=bigArr;
+        },
         // 随机生成 一种方块 （一共七种 S，Z，L，J，I，O，T 每一种有4种方向(上，右，下，左)。
         builBlockXY:function(){
             var self=this;
             //随机产生0-6数组，代表7种形态。
-            var blockRandomNum = Math.floor(Math.random()*2);
+            var blockRandomNum = Math.floor(Math.random()*7);
             //随机产生0-3(上，右，下，左)，代表4个方向的形态
             var dirRandomNum = Math.floor(Math.random()*4);
             //初始坐标
             var shape=self.shapeArr[blockRandomNum];
             var dir=self.dirArr[dirRandomNum];
             self.activeBlock = self.deepCopy(self.blockData[shape][dir]);
-
-            //先用一个S形态 的 上形态来试验一下
-            /*switch (blockRandomNum){
-                // S形态
-                case 0:{
-                    switch (dirRandomNum){
-                        //上,下
-                        case 0:
-                        case 2:{
-                            // (完整显示时初步坐标)
-                            // self.activeBlock={
-                            //     shape:"S",
-                            //     xy:[
-                            //         {x:3,y:1},
-                            //         {x:4,y:1},
-                            //         {x:4,y:0},
-                            //         {x:5,y:0},
-                            //     ]
-                            // }
-                            //初始坐标
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 4, y: 0},
-                                    {x: 3, y: 0},
-                                    {x: 4, y: -1},
-                                    {x: 5, y: -1},
-                                ],
-                                shape:"S",
-                                color:"purple",
-                                value:1
-                            }
-                        } break;
-                        //右，左
-                        case 1:
-                        case 3:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 4, y: -1},
-                                    {x: 4, y: -2},
-                                    {x: 5, y: -1},
-                                    {x: 5, y: 0},
-                                ],
-                                shape:"S",
-                                color:"purple",
-                                value:1
-                            }
-                        } break;
-                    }
-                } break;
-                // Z形态
-                case 1:{
-                    switch (dirRandomNum){
-                        //上,下
-                        case 0:
-                        case 2:{
-                            //初始坐标
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 3, y: -1},
-                                    {x: 4, y: -1},
-                                    {x: 4, y: 0},
-                                    {x: 5, y: 0},
-                                ],
-                                shape:"Z",
-                                color:"green",
-                                value:2
-                            }
-                        } break;
-                        //右，左
-                        case 1:
-                        case 3:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 5, y: -2},
-                                    {x: 5, y: -1},
-                                    {x: 4, y: -1},
-                                    {x: 4, y: 0},
-                                ],
-                                shape:"Z",
-                                color:"green",
-                                value:2
-                            }
-                        } break;
-                    }
-                } break;
-                // L形态
-                case 2:{
-                    switch (dirRandomNum){
-                        case 0:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 4, y: -2},
-                                    {x: 4, y: -1},
-                                    {x: 4, y: 0},
-                                    {x: 5, y: 0},
-                                ],
-                                shape:"L",
-                                color:"blue",
-                                value:3
-                            }
-                        } break;
-                        case 1:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 3, y: 0},
-                                    {x: 3, y: -1},
-                                    {x: 4, y: 0},
-                                    {x: 5, y: 0},
-                                ],
-                                shape:"L",
-                                color:"blue",
-                                value:3
-                            }
-                        } break;
-                        case 2:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 4, y: -2},
-                                    {x: 5, y: -2},
-                                    {x: 5, y: -1},
-                                    {x: 5, y: 0},
-                                ],
-                                shape:"L",
-                                color:"blue",
-                                value:3
-                            }
-                        } break;
-                        case 3:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 3, y: 0},
-                                    {x: 4, y: 0},
-                                    {x: 5, y: -1},
-                                    {x: 5, y: 0},
-                                ],
-                                shape:"L",
-                                color:"blue",
-                                value:3
-                            }
-                        } break;
-                    }
-                } break;
-                // J形态
-                case 3:{
-                    switch (dirRandomNum){
-                        case 0:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 5, y: -2},
-                                    {x: 5, y: -1},
-                                    {x: 5, y: 0},
-                                    {x: 4, y: 0},
-                                ],
-                                shape:"J",
-                                color:"pink",
-                                value:4
-                            }
-                        } break;
-                        case 1:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 4, y: -1},
-                                    {x: 4, y: 0},
-                                    {x: 5, y: 0},
-                                    {x: 6, y: 0},
-                                ],
-                                shape:"J",
-                                color:"pink",
-                                value:4
-                            }
-                        } break;
-                        case 2:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 4, y: -2},
-                                    {x: 5, y: -2},
-                                    {x: 4, y: -1},
-                                    {x: 4, y: 0},
-                                ],
-                                shape:"J",
-                                color:"pink",
-                                value:4
-                            }
-                        } break;
-                        case 3:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 3, y: -1},
-                                    {x: 4, y: -1},
-                                    {x: 5, y: -1},
-                                    {x: 5, y: 0},
-                                ],
-                                shape:"J",
-                                color:"pink",
-                                value:4
-                            }
-                        } break;
-                    }
-                } break;
-                // T形态
-                case 4:{
-                    switch (dirRandomNum){
-                        case 0:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 4, y: -2},
-                                    {x: 4, y: -1},
-                                    {x: 4, y: 0},
-                                    {x: 5, y: -1},
-                                ],
-                                shape:"T",
-                                color:"lightBlue",
-                                value:5
-                            }
-                        } break;
-                        case 1:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 3, y: -1},
-                                    {x: 4, y: -1},
-                                    {x: 5, y: -1},
-                                    {x: 4, y: 0},
-                                ],
-                                shape:"T",
-                                color:"lightBlue",
-                                value:5
-                            }
-                        } break;
-                        case 2:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 5, y: -2},
-                                    {x: 5, y: -1},
-                                    {x: 4, y: -1},
-                                    {x: 5, y: 0},
-                                ],
-                                shape:"T",
-                                color:"lightBlue",
-                                value:5
-                            }
-                        } break;
-                        case 3:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 4, y: -1},
-                                    {x: 4, y: 0},
-                                    {x: 3, y: 0},
-                                    {x: 5, y: 0},
-                                ],
-                                shape:"T",
-                                color:"lightBlue",
-                                value:5
-                            }
-                        } break;
-                    }
-                } break;
-                // O形态
-                case 5:{
-                    switch (dirRandomNum){
-                        case 0:
-                        case 1:
-                        case 2:
-                        case 3:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 4, y: -1},
-                                    {x: 4, y: 0},
-                                    {x: 5, y: -1},
-                                    {x: 5, y: 0},
-                                ],
-                                shape:"O",
-                                color:"yellow",
-                                value:6
-                            }
-                        } break;
-                    }
-                } break;
-                // I形态
-                case 6:{
-                    switch (dirRandomNum){
-                        case 0:
-                        case 1:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 4, y: -3},
-                                    {x: 4, y: -2},
-                                    {x: 4, y: -1},
-                                    {x: 4, y: 0},
-                                ],
-                                shape:"I",
-                                color:"red",
-                                value:7
-                            }
-                        } break;
-                        case 2:
-                        case 3:{
-                            self.activeBlock = {
-                                xy:[
-                                    {x: 3, y: 0},
-                                    {x: 4, y: 0},
-                                    {x: 5, y: 0},
-                                    {x: 6, y: 0},
-                                ],
-                                shape:"I",
-                                color:"red",
-                                value:7
-                            }
-                        } break;
-                    }
-                } break;
-            }*/
         },
-        // 更新dataArr对应位置元素值为1或者0
+        // 更新dataArr对应位置元素值为0大于1
         updateDataArr:function(dataXY,value){
             var self=this;
             // Y为第几行，X为第几列。
-            for(var i1=0,l1=self.dataArr.length;i1<l1;i1++){
-                for(var j=0,l2=dataXY.length;j<l2;j++){
-                    if(self.dataArr[dataXY[j].y]){
-                        self.dataArr[dataXY[j].y][dataXY[j].x]=value;
-                    }
+            for(var j=0,l2=dataXY.length;j<l2;j++){
+                if(self.dataArr[dataXY[j].y]){
+                    self.dataArr[dataXY[j].y][dataXY[j].x]=value;
+                }
+            }
+            //判断是否有消行 有就删除这一行 并且在头部新添加一行[0,0,0,0,0,0,0,0,0,0]
+            var l1=self.dataArr.length;
+            for(var i1=0;i1<l1;i1++){
+                if(self.dataArr[i1].join().indexOf("0")<0){
+                    self.dataArr.splice(i1,1);
+                    self.dataArr.unshift([0,0,0,0,0,0,0,0,0,0]);
                 }
             }
         },
@@ -544,14 +536,12 @@
                     self.builBlockXY();
                     //判断是否到达顶部
                     for(var j=0,l1=activeBlock.length;j<l1;j++){
-                        if(activeBlock[j].y>=0){
-                            if(self.dataArr[0][activeBlock[j].x]>=1){
-                                self.drawCanvasBlockFlag=false;
-                                self.timeFlag=false;
-                                console.log("游戏结束");
-                                console.log(activeBlock);
-                                break;
-                            }
+                        if(activeBlock[j].y>=0 && self.dataArr[0][activeBlock[j].x]>=1){
+                            self.drawCanvasBlockFlag=false;
+                            self.timeFlag=false;
+                            console.log("游戏结束");
+                            console.log(activeBlock);
+                            break;
                         }
                     }
                     moveFlag=false;
@@ -560,9 +550,10 @@
             }
             if(moveFlag){
                 // 当前方块坐标往下移动一步
-                for(var i=0,l=activeBlock.length;i<l;i++){
-                    activeBlock[i].y+=1;
-                }
+                activeBlock[0].y+=1;
+                activeBlock[1].y+=1;
+                activeBlock[2].y+=1;
+                activeBlock[3].y+=1;
             }
         },
         // 根据坐标以及宽高绘制一个小方格
@@ -651,16 +642,12 @@
             }
 
         },
-        // 每次activeBlock坐标向右旋转90°
-        /*  设原点（x,y),中心点(x0,y0) ,原点绕中心点旋转90度后为(x1,y1);
-            则(x-x0)(x1-x0)+(y-y0)(y1-y0)=0 (向量垂直 x1x2+y1y2=0)
-            所以 x1-x0=y-y0 且 y1-y0= -(x-x0) ;
-            解得一通解为 x1=y-y0+x0,y1=x0-x+y0 ，这就是旋转90度的坐标变换公式
-        */
+        // 每次activeBlock坐标向右旋转90° 从根据activevBlock查询下一个nextBlock
         rotate:function(){
             var self=this;
             var shape=self.activeBlock.shape;
             if(shape!=="O"){
+                var rotateFlag=true;
                 var activeBlock=self.activeBlock;
                 var activeBlockXY=activeBlock.xy;
                 //判断activeBlock比初始时下移了多少 左移或右移了多少
@@ -672,30 +659,18 @@
                 //下一个 nextBlock
                 var nextBlock=self.deepCopy(self.blockData[activeBlock.shape][activeBlock.nextDir]);
                 var nextBlockXY=nextBlock.xy;
-                var flag=true;
                 for(var i=0,l=nextBlockXY.length;i<l;i++){
                     nextBlockXY[i].x+=offset_x;
                     nextBlockXY[i].y+=offset_y;
-                    var rowIndex=nextBlockXY[i].y+1;
+                    var rowIndex=nextBlockXY[i].y;
                     var colIndex=nextBlockXY[i].x;
-                    if(self.dataArr[rowIndex] && self.dataArr[rowIndex][colIndex]>=1){
-                        flag=false;
+                    if(colIndex<0 || (self.dataArr[rowIndex] && self.dataArr[rowIndex][colIndex]>=1)){
+                        rotateFlag=false;
                         break;
                     }
                 }
-                if(flag){
+                if(rotateFlag){
                     self.activeBlock=nextBlock;
-                }
-            }
-        },
-        // 监听键盘上下左右事件
-        bindEvent:function(){
-            var self=this;
-            document.addEventListener("keydown",function(e){
-                // 监听方向键
-                // 上
-                if(e.keyCode=="38"){
-                    self.rotate();
                     // 清空画布
                     self.clearCanvas();
                     // 绘制基础底色和网格
@@ -707,28 +682,47 @@
                         self.drawBlockCanvas();
                     }
                 }
+            }
+        },
+        // 监听键盘上下左右事件
+        bindEvent:function(){
+            var self=this;
+            document.addEventListener("keydown",function(e){
+                // 监听方向键
+                // 上
+                if(e.keyCode=="38"){
+                    if(self.timeFlag){
+                        self.rotate();
+                    }
+                }
                 // 下
                 if(e.keyCode=="40"){
-                    // 清空画布
-                    self.clearCanvas();
-                    // 绘制基础底色和网格
-                    self.drawBase();
-                    // 生成下一个方块的坐标
-                    self.changeBlockXY();
-                    // 绘制dataArr中值为1的小方块
-                    self.drawDataArrCanvas();
-                    if(self.drawCanvasBlockFlag){
-                        // 根据方块坐标绘制新的方块
-                        self.drawBlockCanvas();
+                    if(self.timeFlag){
+                        // 清空画布
+                        self.clearCanvas();
+                        // 绘制基础底色和网格
+                        self.drawBase();
+                        // 生成下一个方块的坐标
+                        self.changeBlockXY();
+                        // 绘制dataArr中值为1的小方块
+                        self.drawDataArrCanvas();
+                        if(self.drawCanvasBlockFlag){
+                            // 根据方块坐标绘制新的方块
+                            self.drawBlockCanvas();
+                        }
                     }
                 }
                 // 左
                 if(e.keyCode=="37"){
-                    self.changeLeftRightBlockXY("left");
+                    if(self.timeFlag){
+                        self.changeLeftRightBlockXY("left");
+                    }
                 }
                 // 右
                 if(e.keyCode=="39"){
-                    self.changeLeftRightBlockXY("right");
+                    if(self.timeFlag){
+                        self.changeLeftRightBlockXY("right");
+                    }
                 }
             });
         },
@@ -801,9 +795,18 @@
         // 播放开始
         play:function(){
             var self=this;
-            //随机生成一个形态的坐标
+            // 构建blockData
+            self.buildBlockData();
+            // 构建dataArr
+            self.buildDataArr();
+            // 第一次构建基础网格
+            self.buildBase();
+            // 随机生成一个形态的坐标
             self.builBlockXY();
             self.drawBlockCanvas();
+            // 监听键盘上下左右事件
+            self.bindEvent();
+
             self.time=setInterval(function(){
                 if(self.timeFlag){
                     // 清空画布
@@ -824,9 +827,7 @@
         },
         _init:function(){
             var self=this;
-            self.buildBase();
             self.play();
-            self.bindEvent();
         }
     }
     window.Tetris=Tetris;
