@@ -4,6 +4,21 @@ html,body{
   background-color: #A5CFF7;
 }
 #tetris{
-  margin:auto;
-  position: relative;
+  overflow: hidden;
+  padding: 47px;
+  background: url(../images/borderBg.png) no-repeat 21px 15px;
+  background-size: 306px 513px;
+  //position: relative;
+  //display: flex;
+  //justify-content: center;
+}
+#tetris>canvas:first-child{
+  background: #295159 url("../images/logo.png") no-repeat center 29%;
+  float: left;
+  border:1px solid #62675b;
+}
+#tetris canvas:last-child{
+  float: left;
+  margin-left: 37px;
+  margin-top: 25px;
 }

@@ -1,7 +1,7 @@
 "use strict"
 +(function(){
     var Tetris=function(opt) {
-        this.blockSize=opt.blockSize;
+        this.blockSize=opt.blockSize || 25;
         this.rows=opt.rows || 10;
         this.cols=opt.cols || 18;
         this.terisNode=document.getElementById(opt.id);
@@ -15,6 +15,8 @@
         canvas:null,
         canvasW:this.blockSize*10,
         canvasH:this.blockSize*20,
+
+        infoCanvas:null,
         // img:new Image(),
         downFlag:true,
         drawCanvasBlockFlag:true,
@@ -558,13 +560,14 @@
         },
         // 根据坐标以及宽高绘制一个小方格
         drawSmBlockCanvas:function(x,y,w,h,color){
-            this.canvas.ctx.fillStyle="rgba(0,0,0,0.3)";
-            this.canvas.ctx.fillRect(x, y,w, h);
-            // this.img.src=this.img_src;
+            var self=this;
+            self.canvas.ctx.fillStyle="rgba(0,0,0,0.3)";
+            self.canvas.ctx.fillRect(x, y,w, h);
+            // self.img.src=self.img_src;
             var img=new Image();
             img.src="./images/"+color+"Blcok.png";
+            self.canvas.ctx.drawImage(img,x,y,this.blockSize,this.blockSize);
             // this.img.src="./images/redBlcok.png";
-            this.canvas.ctx.drawImage(img,x,y,this.blockSize,this.blockSize);
         },
         // 根据当前 activeBlock 坐标画出其真实形态
         drawBlockCanvas:function(){
@@ -690,13 +693,13 @@
             document.addEventListener("keydown",function(e){
                 // 监听方向键
                 // 上
-                if(e.keyCode=="38"){
+                if(e.keyCode=="38" || e.keyCode=="87"){
                     if(self.timeFlag){
                         self.rotate();
                     }
                 }
                 // 下
-                if(e.keyCode=="40"){
+                if(e.keyCode=="40" || e.keyCode=="83"){
                     if(self.timeFlag){
                         // 清空画布
                         self.clearCanvas();
@@ -713,16 +716,20 @@
                     }
                 }
                 // 左
-                if(e.keyCode=="37"){
+                if(e.keyCode=="37" || e.keyCode=="65"){
                     if(self.timeFlag){
                         self.changeLeftRightBlockXY("left");
                     }
                 }
                 // 右
-                if(e.keyCode=="39"){
+                if(e.keyCode=="39" || e.keyCode=="68"){
                     if(self.timeFlag){
                         self.changeLeftRightBlockXY("right");
                     }
+                }
+                //space
+                if(e.keyCode=="32"){
+                    console.log("瞬间坠落");
                 }
             });
         },
@@ -758,20 +765,44 @@
         buildBase:function(){
             var self=this;
             self.canvasW=self.blockSize*self.rows,
-                self.canvasH=self.blockSize*self.cols,
+            self.canvasH=self.blockSize*self.cols,
 
-                self.canvas=document.createElement("canvas");
+            self.canvas=document.createElement("canvas");
             self.canvas.width=self.canvasW;
             self.canvas.height=self.canvasH;
-
-            self.terisNode.style.width=self.canvasW+"px";
-            self.terisNode.style.height=self.canvasH+"px";
+            // self.terisNode.style.width=self.canvasW+"px";
+            // self.terisNode.style.height=self.canvasH+"px";
             self.terisNode.appendChild(self.canvas);
+
+            //创建预览信息的infoCanvas
+            self.infoCanvas=document.createElement("canvas");
+            self.infoCanvas.width=self.blockSize*4;
+            self.infoCanvas.height=self.blockSize*4;
+            self.terisNode.appendChild(self.infoCanvas);
+
+            self.infoCanvas.ctx=self.infoCanvas.getContext("2d")
+            self.infoCanvas.ctx.beginPath();
+            self.infoCanvas.ctx.fillStyle="#295159";
+            self.infoCanvas.ctx.fillRect(0, 0, self.blockSize*4, self.blockSize*4);
+            // 绘制infoCanvas网格
+            for(var i=1;i<4;i++){
+                self.infoCanvas.ctx.moveTo(self.blockSize*i,0);
+                self.infoCanvas.ctx.lineTo(self.blockSize*i, self.blockSize*4);
+                self.infoCanvas.ctx.lineWidth = 1;
+            }
+            for(var i=1;i<4;i++){
+                self.infoCanvas.ctx.moveTo(0,self.blockSize*i);
+                self.infoCanvas.ctx.lineTo(self.blockSize*4,self.blockSize*i);
+                self.infoCanvas.ctx.lineWidth = 1;
+            }
+            self.infoCanvas.ctx.strokeStyle="#B8895F";
+            self.infoCanvas.ctx.stroke();
+
 
 
             self.canvas.ctx=self.canvas.getContext("2d")
             self.canvas.ctx.beginPath();
-            // 绘制网格
+            // 绘制canvas网格
             for(var i=1;i<self.rows;i++){
                 self.canvas.ctx.moveTo(self.blockSize*i,0);
                 self.canvas.ctx.lineTo(self.blockSize*i, self.canvasH);
@@ -782,14 +813,14 @@
                 self.canvas.ctx.lineTo(self.canvasW,self.blockSize*i);
                 self.canvas.ctx.lineWidth = 1;
             }
-            self.canvas.ctx.strokeStyle="#B88858";
+            self.canvas.ctx.strokeStyle="#B8895F";
             self.drawBase();
         },
         // 每一次重新绘制基础网格
         drawBase:function(){
             var self=this;
-            self.canvas.ctx.fillStyle="#295159";
-            self.canvas.ctx.fillRect(0, 0, self.canvasW, self.canvasH);
+            // self.canvas.ctx.fillStyle="#295159";
+            // self.canvas.ctx.fillRect(0, 0, self.canvasW, self.canvasH);
             self.canvas.ctx.stroke();
         },
         // 播放开始
