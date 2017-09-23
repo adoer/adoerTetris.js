@@ -30,32 +30,408 @@
         shapeArr:["S","Z","L","J","I","O","T"],
         //随机方向映射数组
         dirArr:["up","right","down","left"],
-        //深拷贝
-        deepCopy: function(p, c) {
-            var self=this;
-            var c = c || {};
-            for (var i in p) {
-                if (typeof p[i] === 'object') {
-                    c[i] = (p[i].constructor === Array) ? [] : {};
-                    self.deepCopy(p[i], c[i]);
-                } else {
-                    c[i] = p[i];
-                }
-            }
-            return c;
-        },
         //各个形态方块原始数据
         blockData:null,
+        //下一个方块
+        cacheBlock:null,
+        cacheBlockData:{
+            // S形态
+            S:{
+                up:{
+                    xy:[
+                        {x: 0, y: 2},
+                        {x: 1, y: 1},
+                        {x: 1, y: 2},
+                        {x: 2, y: 1},
+                    ],
+                    dir:"up",
+                    nextDir:"right",
+                    shape:"S",
+                    color:"purple",
+                    value:1
+                },
+                right:{
+                    xy:[
+                        {x: 1, y: 0},
+                        {x: 1, y: 1},
+                        {x: 2, y: 1},
+                        {x: 2, y: 2},
+                    ],
+                    dir:"right",
+                    nextDir:"down",
+                    shape:"S",
+                    color:"purple",
+                    value:1
+                },
+                down:{
+                    xy:[
+                        {x: 0, y: 2},
+                        {x: 1, y: 1},
+                        {x: 1, y: 2},
+                        {x: 2, y: 1},
+                    ],
+                    dir:"down",
+                    nextDir:"left",
+                    shape:"S",
+                    color:"purple",
+                    value:1
+                },
+                left:{
+                    xy:[
+                        {x: 1, y: 0},
+                        {x: 1, y: 1},
+                        {x: 2, y: 1},
+                        {x: 2, y: 2},
+                    ],
+                    dir:"left",
+                    nextDir:"up",
+                    shape:"S",
+                    color:"purple",
+                    value:1
+                }
+            },
+            // Z形态
+            Z:{
+                up:{
+                    xy:[
+                        {x: 0, y: 1},
+                        {x: 1, y: 1},
+                        {x: 1, y: 2},
+                        {x: 2, y: 2},
+                    ],
+                    dir:"up",
+                    nextDir:"right",
+                    shape:"Z",
+                    color:"green",
+                    value:2
+                },
+                right:{
+                    xy:[
+                        {x: 2, y: 0},
+                        {x: 2, y: 1},
+                        {x: 1, y: 1},
+                        {x: 1, y: 2},
+                    ],
+                    dir:"right",
+                    nextDir:"down",
+                    shape:"Z",
+                    color:"green",
+                    value:2
+                },
+                down:{
+                    xy:[
+                        {x: 0, y: 1},
+                        {x: 1, y: 1},
+                        {x: 1, y: 2},
+                        {x: 2, y: 2},
+                    ],
+                    dir:"down",
+                    nextDir:"left",
+                    shape:"Z",
+                    color:"green",
+                    value:2
+                },
+                left:{
+                    xy:[
+                        {x: 2, y: 0},
+                        {x: 2, y: 1},
+                        {x: 1, y: 1},
+                        {x: 1, y: 2},
+                    ],
+                    dir:"left",
+                    nextDir:"up",
+                    shape:"Z",
+                    color:"green",
+                    value:2
+                }
+            },
+            // L形态
+            L:{
+                up:{
+                    xy:[
+                        {x: 1, y: 1},
+                        {x: 1, y: 2},
+                        {x: 1, y: 3},
+                        {x: 2, y: 3},
+                    ],
+                    dir:"up",
+                    nextDir:"right",
+                    shape:"L",
+                    color:"blue",
+                    value:3
+                },
+                right:{
+                    xy:[
+                        {x: 1, y: 1},
+                        {x: 1, y: 2},
+                        {x: 2, y: 1},
+                        {x: 3, y: 1},
+                    ],
+                    dir:"right",
+                    nextDir:"down",
+                    shape:"L",
+                    color:"blue",
+                    value:3
+                },
+                down:{
+                    xy:[
+                        {x: 1, y: 1},
+                        {x: 2, y: 1},
+                        {x: 2, y: 2},
+                        {x: 2, y: 3},
+                    ],
+                    dir:"down",
+                    nextDir:"left",
+                    shape:"L",
+                    color:"blue",
+                    value:3
+                },
+                left:{
+                    xy:[
+                        {x: 0, y: 1},
+                        {x: 1, y: 1},
+                        {x: 2, y: 1},
+                        {x: 2, y: 2},
+                    ],
+                    dir:"left",
+                    nextDir:"up",
+                    shape:"L",
+                    color:"blue",
+                    value:3
+                }
+            },
+            // J形态
+            J:{
+                up:{
+                    xy:[
+                        {x: 2, y: 1},
+                        {x: 2, y: 2},
+                        {x: 2, y: 3},
+                        {x: 1, y: 3},
+                    ],
+                    dir:"up",
+                    nextDir:"right",
+                    shape:"J",
+                    color:"pink",
+                    value:4
+                },
+                right:{
+                    xy:[
+                        {x: 1, y: 1},
+                        {x: 1, y: 2},
+                        {x: 2, y: 2},
+                        {x: 3, y: 2},
+                    ],
+                    dir:"right",
+                    nextDir:"down",
+                    shape:"J",
+                    color:"pink",
+                    value:4
+                },
+                down:{
+                    xy:[
+                        {x: 1, y: 1},
+                        {x: 1, y: 2},
+                        {x: 1, y: 3},
+                        {x: 2, y: 1},
+                    ],
+                    dir:"down",
+                    nextDir:"left",
+                    shape:"J",
+                    color:"pink",
+                    value:4
+                },
+                left:{
+                    xy:[
+                        {x: 0, y: 1},
+                        {x: 1, y: 1},
+                        {x: 2, y: 1},
+                        {x: 2, y: 2},
+                    ],
+                    dir:"left",
+                    nextDir:"up",
+                    shape:"J",
+                    color:"pink",
+                    value:4
+                }
+            },
+            // T形态
+            T:{
+                up:{
+                    xy:[
+                        {x: 1, y: 1},
+                        {x: 1, y: 2},
+                        {x: 1, y: 3},
+                        {x: 2, y: 2},
+                    ],
+                    dir:"up",
+                    nextDir:"right",
+                    shape:"T",
+                    color:"lightBlue",
+                    value:5
+                },
+                right:{
+                    xy:[
+                        {x: 0, y: 1},
+                        {x: 1, y: 1},
+                        {x: 1, y: 2},
+                        {x: 2, y: 1},
+                    ],
+                    dir:"right",
+                    nextDir:"down",
+                    shape:"T",
+                    color:"lightBlue",
+                    value:5
+                },
+                down:{
+                    xy:[
+                        {x: 1, y: 2},
+                        {x: 2, y: 1},
+                        {x: 2, y: 2},
+                        {x: 2, y: 3},
+                    ],
+                    dir:"down",
+                    nextDir:"left",
+                    shape:"T",
+                    color:"lightBlue",
+                    value:5
+                },
+                left:{
+                    xy:[
+                        {x: 1, y: 1},
+                        {x: 0, y: 2},
+                        {x: 1, y: 2},
+                        {x: 2, y: 2},
+                    ],
+                    dir:"left",
+                    nextDir:"up",
+                    shape:"T",
+                    color:"lightBlue",
+                    value:5
+                }
+            },
+            // O形态
+            O:{
+                up:{
+                    xy:[
+                        {x: 1, y: 1},
+                        {x: 2, y: 1},
+                        {x: 1, y: 2},
+                        {x: 2, y: 2},
+                    ],
+                    dir:"up",
+                    nextDir:"right",
+                    shape:"O",
+                    color:"yellow",
+                    value:6
+                },
+                right:{
+                    xy:[
+                        {x: 1, y: 1},
+                        {x: 2, y: 1},
+                        {x: 1, y: 2},
+                        {x: 2, y: 2},
+                    ],
+                    dir:"right",
+                    nextDir:"down",
+                    shape:"O",
+                    color:"yellow",
+                    value:6
+                },
+                down:{
+                    xy:[
+                        {x: 1, y: 1},
+                        {x: 2, y: 1},
+                        {x: 1, y: 2},
+                        {x: 2, y: 2},
+                    ],
+                    dir:"down",
+                    nextDir:"left",
+                    shape:"O",
+                    color:"yellow",
+                    value:6
+                },
+                left:{
+                    xy:[
+                        {x: 1, y: 1},
+                        {x: 2, y: 1},
+                        {x: 1, y: 2},
+                        {x: 2, y: 2},
+                    ],
+                    dir:"left",
+                    nextDir:"up",
+                    shape:"O",
+                    color:"yellow",
+                    value:6
+                }
+            },
+            // I形态
+            I:{
+                up:{
+                    xy:[
+                        {x: 1, y: 0},
+                        {x: 1, y: 1},
+                        {x: 1, y: 2},
+                        {x: 1, y: 3},
+                    ],
+                    dir:"up",
+                    nextDir:"right",
+                    shape:"I",
+                    color:"red",
+                    value:7
+                },
+                right:{
+                    xy:[
+                        {x: 0, y: 1},
+                        {x: 1, y: 1},
+                        {x: 2, y: 1},
+                        {x: 3, y: 1},
+                    ],
+                    dir:"right",
+                    nextDir:"down",
+                    shape:"I",
+                    color:"red",
+                    value:7
+                },
+                down:{
+                    xy:[
+                        {x: 1, y: 0},
+                        {x: 1, y: 1},
+                        {x: 1, y: 2},
+                        {x: 1, y: 3},
+                    ],
+                    dir:"down",
+                    nextDir:"left",
+                    shape:"I",
+                    color:"red",
+                    value:7
+                },
+                left:{
+                    xy:[
+                        {x: 0, y: 1},
+                        {x: 1, y: 1},
+                        {x: 2, y: 1},
+                        {x: 3, y: 1},
+                    ],
+                    dir:"left",
+                    nextDir:"up",
+                    shape:"I",
+                    color:"red",
+                    value:7
+                }
+            }
+
+        },
         // 创建数组
         dataArr1: [
             //真实
          // [0,1,2,3,4,5,6,7,8,9],
-            [0,0,0,1,1,1,0,0,0,0],
-            [0,0,0,1,0,0,0,0,0,0],
+            [2,2,2,2,0,0,0,0,0,0],
+            [2,2,2,2,0,0,0,0,0,0],
+            [2,2,2,2,0,0,0,0,0,0],
+            [2,2,2,2,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0,0],
-            [0,0,0,0,1,0,0,0,0,0],
-            [0,0,0,0,1,0,0,0,0,0],
-            [0,0,0,0,1,1,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0,0],
@@ -70,6 +446,20 @@
             [0,0,0,0,0,0,0,0,0,0],
         ],
         dataArr:[],
+        //深拷贝
+        deepCopy: function(p, c) {
+            var self=this;
+            var c = c || {};
+            for (var i in p) {
+                if (typeof p[i] === 'object') {
+                    c[i] = (p[i].constructor === Array) ? [] : {};
+                    self.deepCopy(p[i], c[i]);
+                } else {
+                    c[i] = p[i];
+                }
+            }
+            return c;
+        },
         // 创建blockData
         buildBlockData:function(){
             var self=this;
@@ -478,17 +868,53 @@
             }
             self.dataArr=bigArr;
         },
+        drawCacheBlock:function(){
+            var self=this;
+            self.infoCanvas.ctx.clearRect(0,0,self.blockSize*4,self.blockSize*4);
+
+            self.infoCanvas.ctx.fillStyle="#295159";
+            self.infoCanvas.ctx.fillRect(0, 0, self.blockSize*4, self.blockSize*4);
+            self.infoCanvas.ctx.stroke();
+
+            var cacheBlock=self.cacheBlockData[self.cacheBlock.shape][self.cacheBlock.dir];
+            for(var i=0,l=cacheBlock.xy.length;i<l;i++){
+                var x=cacheBlock.xy[i].x*self.blockSize;
+                var y=cacheBlock.xy[i].y*self.blockSize;
+
+                self.infoCanvas.ctx.fillStyle="rgba(0,0,0,0.3)";
+                self.infoCanvas.ctx.fillRect(x, y,self.blockSize, self.blockSize);
+                // self.img.src=self.img_src;
+                var img=new Image();
+                img.src="./images/"+cacheBlock.color+"Blcok.png";
+                self.infoCanvas.ctx.drawImage(img,x,y,self.blockSize,self.blockSize);
+            }
+        },
         // 随机生成 一种方块 （一共七种 S，Z，L，J，I，O，T 每一种有4种方向(上，右，下，左)。
         builBlockXY:function(){
             var self=this;
-            //随机产生0-6数组，代表7种形态。
-            var blockRandomNum = Math.floor(Math.random()*7);
-            //随机产生0-3(上，右，下，左)，代表4个方向的形态
-            var dirRandomNum = Math.floor(Math.random()*4);
-            //初始坐标
-            var shape=self.shapeArr[blockRandomNum];
-            var dir=self.dirArr[dirRandomNum];
-            self.activeBlock = self.deepCopy(self.blockData[shape][dir]);
+            function buildRandBlock(){
+                //随机产生0-6数组，代表7种形态。
+                var blockRandomNum = Math.floor(Math.random()*7);
+                //随机产生0-3(上，右，下，左)，代表4个方向的形态
+                var dirRandomNum = Math.floor(Math.random()*4);
+                //初始坐标
+                var shape=self.shapeArr[blockRandomNum];
+                var dir=self.dirArr[dirRandomNum];
+                var newActiveBlock= self.deepCopy(self.blockData[shape][dir]);
+                // self.activeBlock = self.deepCopy(self.blockData[shape][dir]);
+                return newActiveBlock;
+            }
+
+            if(self.cacheBlock===null){
+                self.cacheBlock = buildRandBlock();
+                self.activeBlock = buildRandBlock();
+            }else{
+                self.activeBlock=self.deepCopy(self.cacheBlock);
+                self.cacheBlock = buildRandBlock();
+            }
+
+            self.drawCacheBlock();
+
         },
         // 更新dataArr对应位置元素值为0大于1
         updateDataArr:function(dataXY,value){
@@ -569,7 +995,7 @@
             self.canvas.ctx.drawImage(img,x,y,this.blockSize,this.blockSize);
             // this.img.src="./images/redBlcok.png";
         },
-        // 根据当前 activeBlock 坐标画出其真实形态
+        // 根据当前 activeBlock cacheBlock坐标画出其真实形态
         drawBlockCanvas:function(){
             var self=this;
             var activeBlock=self.activeBlock.xy;
@@ -778,12 +1204,19 @@
             self.infoCanvas=document.createElement("canvas");
             self.infoCanvas.width=self.blockSize*4;
             self.infoCanvas.height=self.blockSize*4;
-            self.terisNode.appendChild(self.infoCanvas);
+            // self.terisNode.appendChild(self.infoCanvas);
+
+            //创建里面右边显示相关信息的div
+            var divInfo=document.createElement("div");
+            divInfo.id="divInfo";
+            divInfo.appendChild(self.infoCanvas);
+            self.terisNode.appendChild(divInfo);
 
             self.infoCanvas.ctx=self.infoCanvas.getContext("2d")
             self.infoCanvas.ctx.beginPath();
             self.infoCanvas.ctx.fillStyle="#295159";
             self.infoCanvas.ctx.fillRect(0, 0, self.blockSize*4, self.blockSize*4);
+
             // 绘制infoCanvas网格
             for(var i=1;i<4;i++){
                 self.infoCanvas.ctx.moveTo(self.blockSize*i,0);
@@ -797,8 +1230,6 @@
             }
             self.infoCanvas.ctx.strokeStyle="#B8895F";
             self.infoCanvas.ctx.stroke();
-
-
 
             self.canvas.ctx=self.canvas.getContext("2d")
             self.canvas.ctx.beginPath();
