@@ -2,6 +2,7 @@ html,body{
   height: 100%;
   width: 100%;
   background-color: #A5CFF7;
+  font-family: "Microsoft YaHei", Helvetica, Arial, sans-serif;
 }
 #tetris{
   overflow: hidden;
@@ -15,10 +16,29 @@ html,body{
   border:1px solid #62675b;
 }
 #tetris canvas:last-child{
-  border: 3px solid #fdcb5d;
-  border-left-width: 6px;
+  //border: 4px solid #fdcb5d;
+  //margin-top: 2px;
+  border-radius: 6px;
+  border: 2px solid #c19c4b;
+
 }
 #divInfo{
   float: left;
-  margin-left: 13px;
+  margin-left: 18px;
+  background: #fdcb5d;
+  padding: 6px;
+  height: 450px;
+  border-left: 2px solid #d9af52;
+  img{
+    width: 100px;
+    cursor: pointer;
+    display: block;
+    margin-top: 20px;
+  }
+}
+#useTime,#speed,#point{
+  color: #7a5f25;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 20px;
 }

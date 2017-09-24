@@ -18,14 +18,16 @@
 
         infoCanvas:null,
         // img:new Image(),
-        downFlag:true,
         drawCanvasBlockFlag:true,
         // 下落时间间隔 初始为每隔1000ms下落一个小方格。
         speedTime:1000,
         // 当前活动块对象
-        activeBlock:[],
+        activeBlock:null,
         time:null,
-        timeFlag:true,
+        // 是否暂停
+        starFlag:false,
+        // 是否到顶
+        toTopFlag:true,
         //随机形态映射数组
         shapeArr:["S","Z","L","J","I","O","T"],
         //随机方向映射数组
@@ -889,32 +891,31 @@
                 self.infoCanvas.ctx.drawImage(img,x,y,self.blockSize,self.blockSize);
             }
         },
+
+        buildRandBlock:function(){
+            var self=this;
+            //随机产生0-6数组，代表7种形态。
+            var blockRandomNum = Math.floor(Math.random()*7);
+            //随机产生0-3(上，右，下，左)，代表4个方向的形态
+            var dirRandomNum = Math.floor(Math.random()*4);
+            //初始坐标
+            var shape=self.shapeArr[blockRandomNum];
+            var dir=self.dirArr[dirRandomNum];
+            var newActiveBlock= self.deepCopy(self.blockData[shape][dir]);
+            // self.activeBlock = self.deepCopy(self.blockData[shape][dir]);
+            return newActiveBlock;
+        },
         // 随机生成 一种方块 （一共七种 S，Z，L，J，I，O，T 每一种有4种方向(上，右，下，左)。
         builBlockXY:function(){
             var self=this;
-            function buildRandBlock(){
-                //随机产生0-6数组，代表7种形态。
-                var blockRandomNum = Math.floor(Math.random()*7);
-                //随机产生0-3(上，右，下，左)，代表4个方向的形态
-                var dirRandomNum = Math.floor(Math.random()*4);
-                //初始坐标
-                var shape=self.shapeArr[blockRandomNum];
-                var dir=self.dirArr[dirRandomNum];
-                var newActiveBlock= self.deepCopy(self.blockData[shape][dir]);
-                // self.activeBlock = self.deepCopy(self.blockData[shape][dir]);
-                return newActiveBlock;
-            }
-
             if(self.cacheBlock===null){
-                self.cacheBlock = buildRandBlock();
-                self.activeBlock = buildRandBlock();
+                self.cacheBlock = self.buildRandBlock();
+                // self.activeBlock = buildRandBlock();
             }else{
                 self.activeBlock=self.deepCopy(self.cacheBlock);
-                self.cacheBlock = buildRandBlock();
+                self.cacheBlock = self.buildRandBlock();
             }
-
             self.drawCacheBlock();
-
         },
         // 更新dataArr对应位置元素值为0大于1
         updateDataArr:function(dataXY,value){
@@ -966,7 +967,7 @@
                     for(var j=0,l1=activeBlock.length;j<l1;j++){
                         if(activeBlock[j].y>=0 && self.dataArr[0][activeBlock[j].x]>=1){
                             self.drawCanvasBlockFlag=false;
-                            self.timeFlag=false;
+                            self.toTopFlag=false;
                             console.log("游戏结束");
                             console.log(activeBlock);
                             break;
@@ -1120,13 +1121,13 @@
                 // 监听方向键
                 // 上
                 if(e.keyCode=="38" || e.keyCode=="87"){
-                    if(self.timeFlag){
+                    if(self.starFlag && self.toTopFlag){
                         self.rotate();
                     }
                 }
                 // 下
                 if(e.keyCode=="40" || e.keyCode=="83"){
-                    if(self.timeFlag){
+                    if(self.starFlag && self.toTopFlag){
                         // 清空画布
                         self.clearCanvas();
                         // 绘制基础底色和网格
@@ -1143,19 +1144,66 @@
                 }
                 // 左
                 if(e.keyCode=="37" || e.keyCode=="65"){
-                    if(self.timeFlag){
+                    if(self.starFlag && self.toTopFlag){
                         self.changeLeftRightBlockXY("left");
                     }
                 }
                 // 右
                 if(e.keyCode=="39" || e.keyCode=="68"){
-                    if(self.timeFlag){
+                    if(self.starFlag && self.toTopFlag){
                         self.changeLeftRightBlockXY("right");
                     }
                 }
                 //space
                 if(e.keyCode=="32"){
                     console.log("瞬间坠落");
+                }
+            });
+
+            // 开始游戏 暂停游戏 事件
+            var startGame=document.getElementById("startGame");
+            startGame.addEventListener("click",function () {
+                if(/startGame/.test(this.src)){
+                    if(self.toTopFlag===true){
+                        self.starFlag=true;
+                        this.src="./images/stopGame.png";
+                        if(self.activeBlock===null){
+                            self.activeBlock=self.deepCopy(self.cacheBlock);
+                            self.cacheBlock = self.buildRandBlock();
+                            self.drawCacheBlock();
+                            self.starFlag=true;
+                        }
+                    }
+                }else{
+                    if(self.toTopFlag===true){
+                        self.starFlag=false;
+                        this.src="./images/startGame.png";
+                    }
+                }
+            });
+            // 重新开始 事件
+            var reStart=document.getElementById("reStart");
+            reStart.addEventListener("click",function () {
+                // 清空画布
+                self.clearCanvas();
+                // 绘制基础底色和网格
+                self.drawBase();
+                // 随机生成一个形态的坐标
+                self.builBlockXY();
+                //重新生成dataArr
+                self.buildDataArr();
+                //可以绘制drawCanvasBlock
+                self.drawCanvasBlockFlag=true;
+                self.starFlag=true;
+                self.toTopFlag=true;
+            });
+            // 开启声音 事件
+            var startVoice=document.getElementById("startVoice");
+            startVoice.addEventListener("click",function () {
+                if(/startVoice/.test(this.src)){
+                    this.src="./images/stopVoice.png";
+                }else{
+                    this.src="./images/startVoice.png";
                 }
             });
         },
@@ -1196,21 +1244,53 @@
             self.canvas=document.createElement("canvas");
             self.canvas.width=self.canvasW;
             self.canvas.height=self.canvasH;
-            // self.terisNode.style.width=self.canvasW+"px";
-            // self.terisNode.style.height=self.canvasH+"px";
             self.terisNode.appendChild(self.canvas);
 
             //创建预览信息的infoCanvas
             self.infoCanvas=document.createElement("canvas");
             self.infoCanvas.width=self.blockSize*4;
             self.infoCanvas.height=self.blockSize*4;
-            // self.terisNode.appendChild(self.infoCanvas);
 
             //创建里面右边显示相关信息的div
             var divInfo=document.createElement("div");
             divInfo.id="divInfo";
             divInfo.appendChild(self.infoCanvas);
             self.terisNode.appendChild(divInfo);
+
+            //创建用时div
+            var useTime=document.createElement("div");
+            useTime.id="useTime";
+            useTime.appendChild(document.createTextNode("00:00:00"));
+            divInfo.appendChild(useTime);
+
+            //创建速度div
+            var speed=document.createElement("div");
+            speed.id="speed";
+            speed.appendChild(document.createTextNode("速度 1"));
+            divInfo.appendChild(speed);
+
+            //创建速得分div
+            var point=document.createElement("div");
+            point.id="point";
+            point.appendChild(document.createTextNode("得分：0"));
+            divInfo.appendChild(point);
+
+            //创建开始游戏 重新开始img
+            var startGame=document.createElement("img");
+            startGame.src="./images/startGame.png";
+            startGame.id="startGame";
+            divInfo.appendChild(startGame);
+
+            var reStart=document.createElement("img");
+            reStart.src="./images/reStart.png";
+            reStart.id="reStart";
+            divInfo.appendChild(reStart);
+
+            var startVoice=document.createElement("img");
+            startVoice.src="./images/startVoice.png";
+            startVoice.id="startVoice";
+            divInfo.appendChild(startVoice);
+
 
             self.infoCanvas.ctx=self.infoCanvas.getContext("2d")
             self.infoCanvas.ctx.beginPath();
@@ -1265,24 +1345,23 @@
             self.buildBase();
             // 随机生成一个形态的坐标
             self.builBlockXY();
-            self.drawBlockCanvas();
+            // self.drawBlockCanvas();
             // 监听键盘上下左右事件
             self.bindEvent();
-
             self.time=setInterval(function(){
-                if(self.timeFlag){
+                if(self.starFlag && self.toTopFlag){
                     // 清空画布
                     self.clearCanvas();
                     // 绘制基础底色和网格
                     self.drawBase();
-                    // 生成下一个方块的坐标
-                    self.changeBlockXY();
-                    // 绘制dataArr中值为1的小方块
-                    self.drawDataArrCanvas();
                     if(self.drawCanvasBlockFlag){
                         // 根据方块坐标绘制新的方块
                         self.drawBlockCanvas();
                     }
+                    // 生成下一个方块的坐标
+                    self.changeBlockXY();
+                    // 绘制dataArr中值为1的小方块
+                    self.drawDataArrCanvas();
                 }
                 console.log(self.time);
             },self.speedTime);
