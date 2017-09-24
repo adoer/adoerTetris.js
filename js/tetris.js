@@ -24,6 +24,8 @@
         // 当前活动块对象
         activeBlock:null,
         time:null,
+        //用时setInterval()
+        useTimeFlag:null,
         // 是否暂停
         starFlag:false,
         // 是否到顶
@@ -1114,6 +1116,33 @@
                 }
             }
         },
+        //已用时间
+        buildUseTime:function(){
+            var self=this;
+            var h=0,m=0,s=0;
+            var hStr="00",mStr="00",sStr="00";
+            self.useTimeFlag=setInterval(function () {
+                if(self.toTopFlag && self.starFlag){
+                    if(s<59){
+                        s++;
+                        sStr=s<10?"0"+s:s;
+                    }else{
+                        s=0;
+                        sStr=s<10?"0"+s:s;
+                        if(m<59){
+                            m++;
+                            mStr=m<10?"0"+m:m;
+                        }else{
+                            m=0;
+                            mStr=m<10?"0"+m:m;
+                            h++;
+                            hStr=h<10?"0"+h:h;
+                        }
+                    }
+                    document.getElementById("useTime").innerHTML=hStr+":"+mStr+":"+sStr;
+                }
+            },1000);
+        },
         // 监听键盘上下左右事件
         bindEvent:function(){
             var self=this;
@@ -1171,8 +1200,11 @@
                             self.activeBlock=self.deepCopy(self.cacheBlock);
                             self.cacheBlock = self.buildRandBlock();
                             self.drawCacheBlock();
-                            self.starFlag=true;
                         }
+                    }
+                    //开始计时
+                    if(!self.useTimeFlag){
+                        self.buildUseTime();
                     }
                 }else{
                     if(self.toTopFlag===true){
@@ -1184,6 +1216,13 @@
             // 重新开始 事件
             var reStart=document.getElementById("reStart");
             reStart.addEventListener("click",function () {
+                //重新计时
+                if(self.useTimeFlag){
+                    clearInterval(self.useTimeFlag);
+                    //开始计时
+                    self.buildUseTime();
+                }
+
                 // 清空画布
                 self.clearCanvas();
                 // 绘制基础底色和网格
