@@ -19,6 +19,10 @@
         infoCanvas:null,
         // img:new Image(),
         drawCanvasBlockFlag:true,
+        //得分
+        point:0,
+        // 速度等级
+        level:1,
         // 下落时间间隔 初始为每隔1000ms下落一个小方格。
         speedTime:1000,
         // 当前活动块对象
@@ -449,6 +453,8 @@
             [0,0,0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0,0,0],
         ],
+        //原始dataArr的第一个元素数组
+        firstDataArr:[],
         dataArr:[],
         //深拷贝
         deepCopy: function(p, c) {
@@ -871,6 +877,7 @@
                 bigArr.push(smArr)
             }
             self.dataArr=bigArr;
+            self.firstDataArr=bigArr[0];
         },
         drawCacheBlock:function(){
             var self=this;
@@ -893,7 +900,6 @@
                 self.infoCanvas.ctx.drawImage(img,x,y,self.blockSize,self.blockSize);
             }
         },
-
         buildRandBlock:function(){
             var self=this;
             //随机产生0-6数组，代表7种形态。
@@ -928,13 +934,29 @@
                     self.dataArr[dataXY[j].y][dataXY[j].x]=value;
                 }
             }
-            //判断是否有消行 有就删除这一行 并且在头部新添加一行[0,0,0,0,0,0,0,0,0,0]
+            //判断是否有消行 有就删除这一行 并且在头部新添加一行self.firstDataArr
             var l1=self.dataArr.length;
+            //消了几行
+            var pointRows=0;
+            //当前得分
+            var curPoint=0;
             for(var i1=0;i1<l1;i1++){
                 if(self.dataArr[i1].join().indexOf("0")<0){
                     self.dataArr.splice(i1,1);
-                    self.dataArr.unshift([0,0,0,0,0,0,0,0,0,0]);
+                    self.dataArr.unshift(self.firstDataArr);
+                    pointRows++;
                 }
+            }
+
+            if(pointRows>0){
+                switch (pointRows){
+                    case 1: curPoint=40*self.level; break;
+                    case 2: curPoint=100*self.level; break;
+                    case 3: curPoint=300*self.level; break;
+                    case 4: curPoint=1200*self.level; break;
+                }
+                self.point+=curPoint;
+                document.getElementById("point").innerHTML=self.point;
             }
         },
         // 生成方块下一步移动的坐标，并判断是否到达顶部。
@@ -1216,12 +1238,23 @@
             // 重新开始 事件
             var reStart=document.getElementById("reStart");
             reStart.addEventListener("click",function () {
+                //判断开始游戏按钮是否为开始状态 如果是则需要换为暂停状态 因为重新开始就代表游戏已经开始
+                var startGame=document.getElementById("startGame");
+                if(/startGame/.test(startGame.src)){
+                    startGame.src="./images/stopGame.png";
+                }
+
                 //重新计时
                 if(self.useTimeFlag){
                     clearInterval(self.useTimeFlag);
+                    //清空用时
+                    document.getElementById("useTime").innerHTML="00:00:00";
                     //开始计时
                     self.buildUseTime();
                 }
+                //清空得分
+                self.point=0;
+                document.getElementById("point").innerHTML=self.point;
 
                 // 清空画布
                 self.clearCanvas();
@@ -1240,10 +1273,15 @@
             var startVoice=document.getElementById("startVoice");
             startVoice.addEventListener("click",function () {
                 if(/startVoice/.test(this.src)){
+                    self.speedTime=100;
+                    self.loopDown();
                     this.src="./images/stopVoice.png";
                 }else{
+                    self.speedTime=1000;
+                    self.loopDown();
                     this.src="./images/startVoice.png";
                 }
+                console.log(self.speedTime);
             });
         },
         // 根据dataArr画出元素值>1的小方块
@@ -1305,14 +1343,18 @@
             //创建速度div
             var speed=document.createElement("div");
             speed.id="speed";
-            speed.appendChild(document.createTextNode("速度 1"));
+            speed.appendChild(document.createTextNode("等级 1"));
             divInfo.appendChild(speed);
 
             //创建速得分div
+            var pointTitle=document.createElement("div");
             var point=document.createElement("div");
+            pointTitle.id="pointTitle";
             point.id="point";
-            point.appendChild(document.createTextNode("得分：0"));
-            divInfo.appendChild(point);
+            pointTitle.appendChild(document.createTextNode("得分"));
+            point.appendChild(document.createTextNode("0"));
+            pointTitle.appendChild(point);
+            divInfo.appendChild(pointTitle);
 
             //创建开始游戏 重新开始img
             var startGame=document.createElement("img");
@@ -1373,6 +1415,35 @@
             // self.canvas.ctx.fillRect(0, 0, self.canvasW, self.canvasH);
             self.canvas.ctx.stroke();
         },
+        //循环下落
+        loopDown:function(){
+            var self=this;
+            function con(){
+                self.time=setInterval(function(){
+                    if(self.starFlag && self.toTopFlag){
+                        // 清空画布
+                        self.clearCanvas();
+                        // 绘制基础底色和网格
+                        self.drawBase();
+                        if(self.drawCanvasBlockFlag){
+                            // 根据方块坐标绘制新的方块
+                            self.drawBlockCanvas();
+                        }
+                        // 生成下一个方块的坐标
+                        self.changeBlockXY();
+                        // 绘制dataArr中值为1的小方块
+                        self.drawDataArrCanvas();
+                    }
+                    console.log(self.time);
+                },self.speedTime);
+            }
+            if(!self.time){
+                con();
+            }else{
+                clearInterval(self.time);
+                con();
+            }
+        },
         // 播放开始
         play:function(){
             var self=this;
@@ -1387,23 +1458,8 @@
             // self.drawBlockCanvas();
             // 监听键盘上下左右事件
             self.bindEvent();
-            self.time=setInterval(function(){
-                if(self.starFlag && self.toTopFlag){
-                    // 清空画布
-                    self.clearCanvas();
-                    // 绘制基础底色和网格
-                    self.drawBase();
-                    if(self.drawCanvasBlockFlag){
-                        // 根据方块坐标绘制新的方块
-                        self.drawBlockCanvas();
-                    }
-                    // 生成下一个方块的坐标
-                    self.changeBlockXY();
-                    // 绘制dataArr中值为1的小方块
-                    self.drawDataArrCanvas();
-                }
-                console.log(self.time);
-            },self.speedTime);
+            //循环下落
+            self.loopDown();
         },
         _init:function(){
             var self=this;
