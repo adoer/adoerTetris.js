@@ -21,6 +21,8 @@
         drawCanvasBlockFlag:true,
         //得分
         point:0,
+        //已消行数 30行 升一级
+        hasRows:0,
         // 速度等级
         level:1,
         // 下落时间间隔 初始为每隔1000ms下落一个小方格。
@@ -877,7 +879,7 @@
                 bigArr.push(smArr)
             }
             self.dataArr=bigArr;
-            self.firstDataArr=bigArr[0];
+            self.firstDataArr=bigArr[0].slice();
         },
         drawCacheBlock:function(){
             var self=this;
@@ -926,23 +928,27 @@
             self.drawCacheBlock();
         },
         // 更新dataArr对应位置元素值为0大于1
-        updateDataArr:function(dataXY,value){
+        updateDataArr:function(){
             var self=this;
-            // Y为第几行，X为第几列。
-            for(var j=0,l2=dataXY.length;j<l2;j++){
-                if(self.dataArr[dataXY[j].y]){
-                    self.dataArr[dataXY[j].y][dataXY[j].x]=value;
-                }
-            }
-            //判断是否有消行 有就删除这一行 并且在头部新添加一行self.firstDataArr
-            var l1=self.dataArr.length;
             //消了几行
             var pointRows=0;
             //当前得分
             var curPoint=0;
-            for(var i1=0;i1<l1;i1++){
-                if(self.dataArr[i1].join().indexOf("0")<0){
-                    self.dataArr.splice(i1,1);
+            var activeBlock=self.activeBlock.xy;
+            var value=self.activeBlock.value;
+            // Y为第几行，X为第几列。
+            for(var j=0,l2=activeBlock.length;j<l2;j++){
+                var row=activeBlock[j].y;
+                var col=activeBlock[j].x;
+                if(self.dataArr[row]){
+                    self.dataArr[row][col]=value;
+                }
+            }
+
+            for(var i=0,l=self.dataArr.length;i<l;i++){
+                //判断是否有消行 有就删除这一行 并且在头部新添加一行self.firstDataArr
+                if(self.dataArr[i].join().indexOf("0")<0){
+                    self.dataArr.splice(i,1);
                     self.dataArr.unshift(self.firstDataArr);
                     pointRows++;
                 }
@@ -957,7 +963,16 @@
                 }
                 self.point+=curPoint;
                 document.getElementById("point").innerHTML=self.point;
+
+                self.hasRows+=pointRows;
+                //判断curLevel大小 每30行升一级
+                var curLevel=Math.ceil(self.hasRows/30);
+                if(self.hasRows>30 && self.level<curLevel){
+                    self.level=curLevel;
+                    document.getElementById("level").innerHTML="等级 "+self.level;
+                }
             }
+            console.log(self.hasRows+"行");
         },
         // 生成方块下一步移动的坐标，并判断是否到达顶部。
         changeBlockXY:function(){
@@ -973,7 +988,7 @@
                 //判断是否超过底线
                 if(activeBlock[i].y+1>=self.cols){
                     //更新dataArr对应位置的元素为activeBlock.value
-                    self.updateDataArr(activeBlock,self.activeBlock.value);
+                    self.updateDataArr();
                     //重新生成新的方块坐标
                     self.builBlockXY();
                     moveFlag=false;
@@ -984,16 +999,16 @@
                 var colIndex=activeBlock[i].x;
                 if(self.dataArr[rowIndex] && self.dataArr[rowIndex][colIndex]>=1){
                     //更新dataArr对应位置的元素为activeBlock.value
-                    self.updateDataArr(activeBlock,self.activeBlock.value);
+                    self.updateDataArr();
                     //重新生成新的方块坐标 新的activeBlock
                     self.builBlockXY();
                     //判断是否到达顶部
-                    for(var j=0,l1=activeBlock.length;j<l1;j++){
-                        if(activeBlock[j].y>=0 && self.dataArr[0][activeBlock[j].x]>=1){
+                    for(var j=0,l1=self.activeBlock.xy.length;j<l1;j++){
+                        if(self.activeBlock.xy[j].y>=0 && self.dataArr[0][self.activeBlock.xy[j].x]>=1){
                             self.drawCanvasBlockFlag=false;
                             self.toTopFlag=false;
                             console.log("游戏结束");
-                            console.log(activeBlock);
+                            console.log(self.activeBlock.xy);
                             break;
                         }
                     }
@@ -1118,7 +1133,7 @@
                     nextBlockXY[i].y+=offset_y;
                     var rowIndex=nextBlockXY[i].y;
                     var colIndex=nextBlockXY[i].x;
-                    if(colIndex<0 || (self.dataArr[rowIndex] && self.dataArr[rowIndex][colIndex]>=1)){
+                    if(colIndex>=self.rows || colIndex<0 || (self.dataArr[rowIndex] && self.dataArr[rowIndex][colIndex]>=1)){
                         rotateFlag=false;
                         break;
                     }
@@ -1228,6 +1243,10 @@
                     if(!self.useTimeFlag){
                         self.buildUseTime();
                     }
+                    //开始循环下落
+                    if(!self.time){
+                        self.loopDown();
+                    }
                 }else{
                     if(self.toTopFlag===true){
                         self.starFlag=false;
@@ -1256,6 +1275,10 @@
                 self.point=0;
                 document.getElementById("point").innerHTML=self.point;
 
+                self.hasRows=0;
+                self.level=1;
+                document.getElementById("level").innerHTML=self.level;
+
                 // 清空画布
                 self.clearCanvas();
                 // 绘制基础底色和网格
@@ -1273,15 +1296,10 @@
             var startVoice=document.getElementById("startVoice");
             startVoice.addEventListener("click",function () {
                 if(/startVoice/.test(this.src)){
-                    self.speedTime=100;
-                    self.loopDown();
                     this.src="./images/stopVoice.png";
                 }else{
-                    self.speedTime=1000;
-                    self.loopDown();
                     this.src="./images/startVoice.png";
                 }
-                console.log(self.speedTime);
             });
         },
         // 根据dataArr画出元素值>1的小方块
@@ -1342,7 +1360,7 @@
 
             //创建速度div
             var speed=document.createElement("div");
-            speed.id="speed";
+            speed.id="level";
             speed.appendChild(document.createTextNode("等级 1"));
             divInfo.appendChild(speed);
 
@@ -1437,12 +1455,9 @@
                     console.log(self.time);
                 },self.speedTime);
             }
-            if(!self.time){
-                con();
-            }else{
-                clearInterval(self.time);
-                con();
-            }
+            con();
+            // clearInterval(self.time);
+            // con();
         },
         // 播放开始
         play:function(){
@@ -1458,8 +1473,6 @@
             // self.drawBlockCanvas();
             // 监听键盘上下左右事件
             self.bindEvent();
-            //循环下落
-            self.loopDown();
         },
         _init:function(){
             var self=this;
