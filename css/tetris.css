@@ -1,0 +1,65 @@
+html,
+body {
+  height: 100%;
+  width: 100%;
+  background-color: #A5CFF7;
+  font-family: "Microsoft YaHei", Helvetica, Arial, sans-serif;
+}
+#tetris {
+  overflow: hidden;
+  padding: 47px;
+  background: url(../images/borderBg.png) no-repeat 21px 15px;
+  background-size: 306px 513px;
+}
+#tetris > canvas:first-child {
+  background: #295159 url("../images/logo.png") no-repeat center 29%;
+  float: left;
+  border: 1px solid #62675b;
+}
+#tetris canvas:last-child {
+  border-radius: 6px;
+  border: 2px solid #c19c4b;
+}
+#divInfo {
+  float: left;
+  margin-left: 18px;
+  background: #fdcb5d;
+  padding: 6px;
+  user-select: none;
+  height: 450px;
+  border-left: 2px solid #d9af52;
+  border-radius: 0 6px 6px 0;
+}
+#divInfo > canvas {
+  border-radius: 4px;
+}
+#divInfo img {
+  width: 100px;
+  cursor: pointer;
+  display: block;
+  margin-top: 16px;
+}
+#useTime,
+#level {
+  color: #7a5f25;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 8px;
+  background: #f0bf55;
+  padding: 10px 0;
+  border: 1px solid #e9bd5c;
+  border-radius: 4px;
+}
+#pointTitle {
+  color: #7a5f25;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 8px;
+  background: #f0bf55;
+  padding: 10px 0;
+  border: 1px solid #e9bd5c;
+  border-radius: 4px;
+}
+#pointTitle > div {
+  margin-top: 8px;
+}
