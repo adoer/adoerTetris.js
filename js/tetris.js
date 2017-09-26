@@ -456,7 +456,7 @@
             [0,0,0,0,0,0,0,0,0,0],
         ],
         //原始dataArr的第一个元素数组
-        firstDataArr:[],
+        firstDataArr:[0,0,0,0,0,0,0,0,0,0],
         dataArr:[],
         //深拷贝
         deepCopy: function(p, c) {
@@ -876,10 +876,9 @@
                 for(var j=0;j<self.rows;j++){
                     smArr[j]=0;
                 }
-                bigArr.push(smArr)
+                bigArr.push(smArr);
             }
             self.dataArr=bigArr;
-            self.firstDataArr=bigArr[0].slice();
         },
         drawCacheBlock:function(){
             var self=this;
@@ -945,11 +944,11 @@
                 }
             }
 
-            for(var i=0,l=self.dataArr.length;i<l;i++){
+            for(var i=0,l=activeBlock.length;i<l;i++){
                 //判断是否有消行 有就删除这一行 并且在头部新添加一行self.firstDataArr
-                if(self.dataArr[i].join().indexOf("0")<0){
-                    self.dataArr.splice(i,1);
-                    self.dataArr.unshift(self.firstDataArr);
+                if(activeBlock[i].y>=0 && self.dataArr[activeBlock[i].y].join().indexOf("0")<0){
+                    self.dataArr.splice(activeBlock[i].y,1);
+                    self.dataArr.unshift([0,0,0,0,0,0,0,0,0,0]);
                     pointRows++;
                 }
             }
@@ -987,6 +986,7 @@
             for(var i=0,l=activeBlock.length;i<l;i++){
                 //判断是否超过底线
                 if(activeBlock[i].y+1>=self.cols){
+                    console.log("触底");
                     //更新dataArr对应位置的元素为activeBlock.value
                     self.updateDataArr();
                     //重新生成新的方块坐标
@@ -998,6 +998,7 @@
                 var rowIndex=activeBlock[i].y+1;
                 var colIndex=activeBlock[i].x;
                 if(self.dataArr[rowIndex] && self.dataArr[rowIndex][colIndex]>=1){
+                    console.log("遇到其他方块");
                     //更新dataArr对应位置的元素为activeBlock.value
                     self.updateDataArr();
                     //重新生成新的方块坐标 新的activeBlock
@@ -1225,7 +1226,6 @@
                     console.log("瞬间坠落");
                 }
             });
-
             // 开始游戏 暂停游戏 事件
             var startGame=document.getElementById("startGame");
             startGame.addEventListener("click",function () {
@@ -1260,6 +1260,9 @@
                 //判断开始游戏按钮是否为开始状态 如果是则需要换为暂停状态 因为重新开始就代表游戏已经开始
                 var startGame=document.getElementById("startGame");
                 if(/startGame/.test(startGame.src)){
+                    if(self.activeBlock===null){
+                        return false;
+                    }
                     startGame.src="./images/stopGame.png";
                 }
 
@@ -1277,7 +1280,7 @@
 
                 self.hasRows=0;
                 self.level=1;
-                document.getElementById("level").innerHTML=self.level;
+                document.getElementById("level").innerHTML="等级 "+self.level;
 
                 // 清空画布
                 self.clearCanvas();
@@ -1436,26 +1439,23 @@
         //循环下落
         loopDown:function(){
             var self=this;
-            function con(){
-                self.time=setInterval(function(){
-                    if(self.starFlag && self.toTopFlag){
-                        // 清空画布
-                        self.clearCanvas();
-                        // 绘制基础底色和网格
-                        self.drawBase();
-                        if(self.drawCanvasBlockFlag){
-                            // 根据方块坐标绘制新的方块
-                            self.drawBlockCanvas();
-                        }
-                        // 生成下一个方块的坐标
-                        self.changeBlockXY();
-                        // 绘制dataArr中值为1的小方块
-                        self.drawDataArrCanvas();
+            self.time=setInterval(function(){
+                if(self.starFlag && self.toTopFlag){
+                    // 清空画布
+                    self.clearCanvas();
+                    // 绘制基础底色和网格
+                    self.drawBase();
+                    if(self.drawCanvasBlockFlag){
+                        // 根据方块坐标绘制新的方块
+                        self.drawBlockCanvas();
                     }
-                    console.log(self.time);
-                },self.speedTime);
-            }
-            con();
+                    // 生成下一个方块的坐标
+                    self.changeBlockXY();
+                    // 绘制dataArr中值为1的小方块
+                    self.drawDataArrCanvas();
+                }
+                console.log(self.time);
+            },self.speedTime);
             // clearInterval(self.time);
             // con();
         },
