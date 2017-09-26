@@ -198,10 +198,10 @@
                 },
                 left:{
                     xy:[
-                        {x: 0, y: 1},
-                        {x: 1, y: 1},
                         {x: 2, y: 1},
                         {x: 2, y: 2},
+                        {x: 1, y: 2},
+                        {x: 0, y: 2},
                     ],
                     dir:"left",
                     nextDir:"up",
@@ -430,7 +430,6 @@
                     value:7
                 }
             }
-
         },
         // 创建数组
         dataArr1: [
@@ -908,6 +907,8 @@
             //随机产生0-3(上，右，下，左)，代表4个方向的形态
             var dirRandomNum = Math.floor(Math.random()*4);
             //初始坐标
+            blockRandomNum=2;
+            dirRandomNum=3;
             var shape=self.shapeArr[blockRandomNum];
             var dir=self.dirArr[dirRandomNum];
             var newActiveBlock= self.deepCopy(self.blockData[shape][dir]);
@@ -974,7 +975,6 @@
                     self.loopDown();
                 }
             }
-            console.log(self.hasRows+"行");
         },
         // 生成方块下一步移动的坐标，并判断是否到达顶部。
         changeBlockXY:function(){
@@ -1478,8 +1478,7 @@
             self.bindEvent();
         },
         _init:function(){
-            var self=this;
-            self.play();
+            this.play();
         }
     }
     window.Tetris=Tetris;
