@@ -969,6 +969,9 @@
                 if(self.hasRows>30 && self.level<curLevel){
                     self.level=curLevel;
                     document.getElementById("level").innerHTML="等级 "+self.level;
+                    clearInterval(self.time);
+                    self.speedTime=self.speedTime/self.level;
+                    self.loopDown();
                 }
             }
             console.log(self.hasRows+"行");
