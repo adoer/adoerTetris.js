@@ -907,8 +907,6 @@
             //随机产生0-3(上，右，下，左)，代表4个方向的形态
             var dirRandomNum = Math.floor(Math.random()*4);
             //初始坐标
-            blockRandomNum=2;
-            dirRandomNum=3;
             var shape=self.shapeArr[blockRandomNum];
             var dir=self.dirArr[dirRandomNum];
             var newActiveBlock= self.deepCopy(self.blockData[shape][dir]);
@@ -948,6 +946,11 @@
             for(var i=0,l=activeBlock.length;i<l;i++){
                 //判断是否有消行 有就删除这一行 并且在头部新添加一行self.firstDataArr
                 if(activeBlock[i].y>=0 && self.dataArr[activeBlock[i].y].join().indexOf("0")<0){
+                    /*  todo
+                        此处直接用[0,0,0,0,0,0,0,0,0,0] 使用已声明的self.firsDataArr话
+                        在消行13~16左右时会出现异常，self.firsDataArr里的元素会被影响导致，
+                        原因未知。
+                    */
                     self.dataArr.splice(activeBlock[i].y,1);
                     self.dataArr.unshift([0,0,0,0,0,0,0,0,0,0]);
                     pointRows++;
