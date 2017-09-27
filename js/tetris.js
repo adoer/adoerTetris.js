@@ -15,9 +15,31 @@
         canvas:null,
         canvasW:this.blockSize*10,
         canvasH:this.blockSize*20,
-
         infoCanvas:null,
-        // img:new Image(),
+
+        //记录方向键与S键被按下的状态
+        speedDownFlag:false,
+
+        //移动声音对象
+        moveAudio:null,
+        //背景声音
+        bgAudio:null,
+        //消除声音
+        clearAudio1:null,
+        //快速下落触底的声音
+        speedDown:null,
+
+
+        //预加载img
+        imgBlue:null,
+        imgPink:null,
+        imgGreen:null,
+        imgPurple:null,
+        imgRed:null,
+        imgYellow:null,
+        imgLightBlue:null,
+
+        //是否绘制activeBlock
         drawCanvasBlockFlag:true,
         //得分
         point:0,
@@ -894,9 +916,17 @@
 
                 self.infoCanvas.ctx.fillStyle="rgba(0,0,0,0.3)";
                 self.infoCanvas.ctx.fillRect(x, y,self.blockSize, self.blockSize);
-                // self.img.src=self.img_src;
-                var img=new Image();
-                img.src="./images/"+cacheBlock.color+"Blcok.png";
+
+                var img;
+                switch (cacheBlock.color){
+                    case "blue":img=self.imgBlue;break;
+                    case "pink":img=self.imgPink;break;
+                    case "red":img=self.imgRed;break;
+                    case "green":img=self.imgGreen;break;
+                    case "purple":img=self.imgPurple;break;
+                    case "yellow":img=self.imgYellow;break;
+                    case "lightBlue":img=self.imgLightBlue;break;
+                }
                 self.infoCanvas.ctx.drawImage(img,x,y,self.blockSize,self.blockSize);
             }
         },
@@ -928,6 +958,14 @@
         // 更新dataArr对应位置元素值为0大于1
         updateDataArr:function(){
             var self=this;
+            var startVoiceBtn=document.getElementById("startVoice");
+            //启用消除音效
+            function playClearAndio(n){
+                if(/stopVoice/.test(startVoiceBtn.src)){
+                    self.clearAudio1.currentTime=0;
+                    self.clearAudio1.play();
+                }
+            }
             //消了几行
             var pointRows=0;
             //当前得分
@@ -957,12 +995,37 @@
                 }
             }
 
+            //根据已消行 计算得分、总消行、等级
             if(pointRows>0){
                 switch (pointRows){
-                    case 1: curPoint=40*self.level; break;
-                    case 2: curPoint=100*self.level; break;
-                    case 3: curPoint=300*self.level; break;
-                    case 4: curPoint=1200*self.level; break;
+                    case 1: {
+                        curPoint=40*self.level;
+                        if(/stopVoice/.test(startVoiceBtn.src)){
+                            self.clearAudio1.currentTime=0;
+                            self.clearAudio1.play();
+                        }
+                    } break;
+                    case 2:{
+                        curPoint=100*self.level;
+                        if(/stopVoice/.test(startVoiceBtn.src)){
+                            self.clearAudio2.currentTime=0;
+                            self.clearAudio2.play();
+                        }
+                    } break;
+                    case 3:{
+                        curPoint=300*self.level;
+                        if(/stopVoice/.test(startVoiceBtn.src)){
+                            self.clearAudio3.currentTime=0;
+                            self.clearAudio3.play();
+                        }
+                    } break;
+                    case 4:{
+                        curPoint=1200*self.level;
+                        if(/stopVoice/.test(startVoiceBtn.src)){
+                            self.clearAudio4.currentTime=0;
+                            self.clearAudio4.play();
+                        }
+                    } break;
                 }
                 self.point+=curPoint;
                 document.getElementById("point").innerHTML=self.point;
@@ -992,7 +1055,12 @@
             for(var i=0,l=activeBlock.length;i<l;i++){
                 //判断是否超过底线
                 if(activeBlock[i].y+1>=self.cols){
-                    console.log("触底");
+                    // console.log("触底");
+                    //检测键盘下键 与 s键是否处于按下状态 如果是添加相应音效
+                    if(self.speedDownFlag){
+                        self.speedDown.currentTime=0;
+                        self.speedDown.play();
+                    }
                     //更新dataArr对应位置的元素为activeBlock.value
                     self.updateDataArr();
                     //重新生成新的方块坐标
@@ -1004,7 +1072,12 @@
                 var rowIndex=activeBlock[i].y+1;
                 var colIndex=activeBlock[i].x;
                 if(self.dataArr[rowIndex] && self.dataArr[rowIndex][colIndex]>=1){
-                    console.log("遇到其他方块");
+                    // console.log("遇到其他方块");
+                    //检测键盘下键 与 s键是否处于按下状态 如果是添加相应音效
+                    if(self.speedDownFlag){
+                        self.speedDown.currentTime=0;
+                        self.speedDown.play();
+                    }
                     //更新dataArr对应位置的元素为activeBlock.value
                     self.updateDataArr();
                     //重新生成新的方块坐标 新的activeBlock
@@ -1015,7 +1088,7 @@
                             self.drawCanvasBlockFlag=false;
                             self.toTopFlag=false;
                             console.log("游戏结束");
-                            console.log(self.activeBlock.xy);
+                            // console.log(self.activeBlock.xy);
                             break;
                         }
                     }
@@ -1036,11 +1109,17 @@
             var self=this;
             self.canvas.ctx.fillStyle="rgba(0,0,0,0.3)";
             self.canvas.ctx.fillRect(x, y,w, h);
-            // self.img.src=self.img_src;
-            var img=new Image();
-            img.src="./images/"+color+"Blcok.png";
+            var img;
+            switch (color){
+                case "blue":img=self.imgBlue;break;
+                case "pink":img=self.imgPink;break;
+                case "red":img=self.imgRed;break;
+                case "green":img=self.imgGreen;break;
+                case "purple":img=self.imgPurple;break;
+                case "yellow":img=self.imgYellow;break;
+                case "lightBlue":img=self.imgLightBlue;break;
+            }
             self.canvas.ctx.drawImage(img,x,y,this.blockSize,this.blockSize);
-            // this.img.src="./images/redBlcok.png";
         },
         // 根据当前 activeBlock cacheBlock坐标画出其真实形态
         drawBlockCanvas:function(){
@@ -1190,17 +1269,31 @@
         // 监听键盘上下左右事件
         bindEvent:function(){
             var self=this;
+            var moveVoice=document.getElementById("moveVoice");
+            var startVoiceBtn=document.getElementById("startVoice");
+            // 移动音效
+           function moveVoiceFunc(){
+               //判断当开启声音时才调用
+               if(/stopVoice/.test(startVoiceBtn.src)){
+                   self.moveAudio.currentTime = 0;
+                   self.moveAudio.play();
+               }
+           }
             document.addEventListener("keydown",function(e){
                 // 监听方向键
-                // 上
+                // 上 与 W键
                 if(e.keyCode=="38" || e.keyCode=="87"){
                     if(self.starFlag && self.toTopFlag){
+                        moveVoiceFunc();
                         self.rotate();
                     }
                 }
-                // 下
+                // 下 与 S键
                 if(e.keyCode=="40" || e.keyCode=="83"){
                     if(self.starFlag && self.toTopFlag){
+                        //记录方向键下键与S键按下的状态
+                        self.speedDownFlag=true;
+                        moveVoiceFunc();
                         // 清空画布
                         self.clearCanvas();
                         // 绘制基础底色和网格
@@ -1215,21 +1308,31 @@
                         }
                     }
                 }
-                // 左
+                // 左 与 A键
                 if(e.keyCode=="37" || e.keyCode=="65"){
                     if(self.starFlag && self.toTopFlag){
+                        moveVoiceFunc();
                         self.changeLeftRightBlockXY("left");
                     }
                 }
-                // 右
+                // 右 与 D键
                 if(e.keyCode=="39" || e.keyCode=="68"){
                     if(self.starFlag && self.toTopFlag){
+                        moveVoiceFunc();
                         self.changeLeftRightBlockXY("right");
                     }
                 }
                 //space
                 if(e.keyCode=="32"){
+                    moveVoiceFunc();
                     console.log("瞬间坠落");
+                }
+            });
+            document.addEventListener("keyup",function(e){
+                if(e.keyCode=="40" || e.keyCode=="83"){
+                    if(self.starFlag && self.toTopFlag){
+                        self.speedDownFlag=false;
+                    }
                 }
             });
             // 开始游戏 暂停游戏 事件
@@ -1288,26 +1391,40 @@
                 self.level=1;
                 document.getElementById("level").innerHTML="等级 "+self.level;
 
-                // 清空画布
-                self.clearCanvas();
-                // 绘制基础底色和网格
-                self.drawBase();
-                // 随机生成一个形态的坐标
-                self.builBlockXY();
-                //重新生成dataArr
-                self.buildDataArr();
                 //可以绘制drawCanvasBlock
                 self.drawCanvasBlockFlag=true;
                 self.starFlag=true;
                 self.toTopFlag=true;
+
+                //恢复初始速度
+                self.speedTime=1000;
+
+                if(self.time){
+                    clearTimeout(self.time);
+
+                    // 清空画布
+                    self.clearCanvas();
+                    // 绘制基础底色和网格
+                    self.drawBase();
+                    // 随机生成一个形态的坐标
+                    self.builBlockXY();
+                    //重新生成dataArr
+                    self.buildDataArr();
+
+                    self.loopDown();
+                }else{
+                    // 如果第一次进来 游戏还没有开始 则不做任何操作
+                }
             });
             // 开启声音 事件
             var startVoice=document.getElementById("startVoice");
             startVoice.addEventListener("click",function () {
-                if(/startVoice/.test(this.src)){
-                    this.src="./images/stopVoice.png";
-                }else{
+                if(/stopVoice/.test(this.src)){
                     this.src="./images/startVoice.png";
+                    self.bgAudio.pause();
+                }else{
+                    this.src="./images/stopVoice.png";
+                    self.bgAudio.play();
                 }
             });
         },
@@ -1383,6 +1500,45 @@
             pointTitle.appendChild(point);
             divInfo.appendChild(pointTitle);
 
+            //创建移动声音
+            self.moveAudio = new Audio();
+            self.moveAudio.src = "./voice/pop.mp3";
+            self.moveAudio.preload=true;
+            //创建消除声音
+            self.clearAudio1 = new Audio();
+            self.clearAudio1.src = "./voice/good.mp3";
+            self.clearAudio1.preload=true;
+            //音量
+            self.clearAudio1.volume=1;
+
+            self.clearAudio2 = new Audio();
+            self.clearAudio2.src = "./voice/great.mp3";
+            self.clearAudio2.preload=true;
+
+            self.clearAudio3 = new Audio();
+            self.clearAudio3.src = "./voice/excellent.mp3";
+            self.clearAudio3.preload=true;
+
+            self.clearAudio4 = new Audio();
+            self.clearAudio4.src = "./voice/amazing.mp3";
+            self.clearAudio4.preload=true;
+
+            //创建快速下落触底的音效
+            self.speedDown = new Audio();
+            self.speedDown.src = "./voice/clearBg.mp3";
+            self.speedDown.preload=true;
+
+            //创建背景声音
+            self.bgAudio = new Audio();
+            self.bgAudio.src = "./voice/Secret.mp3";
+            // self.bgAudio.autoplay = true;
+            self.bgAudio.preload = true;
+            self.bgAudio.loop = true;
+            //音量
+            self.bgAudio.volume=0.8;
+
+
+
             //创建开始游戏 重新开始img
             var startGame=document.createElement("img");
             startGame.src="./images/startGame.png";
@@ -1395,7 +1551,7 @@
             divInfo.appendChild(reStart);
 
             var startVoice=document.createElement("img");
-            startVoice.src="./images/startVoice.png";
+            startVoice.src="./images/stopVoice.png";
             startVoice.id="startVoice";
             divInfo.appendChild(startVoice);
 
@@ -1465,9 +1621,34 @@
             // clearInterval(self.time);
             // con();
         },
-        // 播放开始
-        play:function(){
+        //预加载所需图片
+        preImg:function(){
             var self=this;
+            self.imgBlue=new Image();
+            self.imgBlue.src="./images/blueBlcok.png";
+
+            self.imgPink=new Image();
+            self.imgPink.src="./images/pinkBlcok.png";
+
+            self.imgGreen=new Image();
+            self.imgGreen.src="./images/greenBlcok.png";
+
+            self.imgRed=new Image();
+            self.imgRed.src="./images/RedBlcok.png";
+
+            self.imgPurple=new Image();
+            self.imgPurple.src="./images/purpleBlcok.png";
+
+            self.imgYellow=new Image();
+            self.imgYellow.src="./images/yellowBlcok.png"
+
+            self.imgLightBlue=new Image();
+            self.imgLightBlue.src="./images/lightBlueBlcok.png";
+        },
+        _init:function(){
+            var self=this;
+            //预加载所需图片
+            self.preImg();
             // 构建blockData
             self.buildBlockData();
             // 构建dataArr
@@ -1479,9 +1660,6 @@
             // self.drawBlockCanvas();
             // 监听键盘上下左右事件
             self.bindEvent();
-        },
-        _init:function(){
-            this.play();
         }
     }
     window.Tetris=Tetris;
