@@ -5,6 +5,9 @@ body {
   background-color: #A5CFF7;
   font-family: "Microsoft YaHei", Helvetica, Arial, sans-serif;
 }
+* {
+  box-sizing: border-box;
+}
 #tetris {
   overflow: hidden;
   padding: 47px;
