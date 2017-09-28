@@ -20,15 +20,25 @@
         //记录方向键与S键被按下的状态
         speedDownFlag:false,
 
-        //移动声音对象
+        //开启声音flag 默认开启
+        starVoiceFlag:true,
+        //移动声音
         moveAudio:null,
         //背景声音
         bgAudio:null,
         //消除声音
         clearAudio1:null,
+        clearAudio2:null,
+        clearAudio3:null,
+        clearAudio4:null,
         //快速下落触底的声音
         speedDown:null,
-
+        //点击音效
+        clickAudio:null,
+        //游戏结束音效
+        gameOver:null,
+        //游戏开始音效
+        fight:null,
 
         //预加载img
         imgBlue:null,
@@ -38,9 +48,13 @@
         imgRed:null,
         imgYellow:null,
         imgLightBlue:null,
+        imgGameOver:null,
+        imgGameIntroduction:null,
 
         //是否绘制activeBlock
         drawCanvasBlockFlag:true,
+        //是否要绘制游戏结束画面的标志
+        showGameOverFlag:false,
         //得分
         point:0,
         //已消行数 30行 升一级
@@ -958,14 +972,6 @@
         // 更新dataArr对应位置元素值为0大于1
         updateDataArr:function(){
             var self=this;
-            var startVoiceBtn=document.getElementById("startVoice");
-            //启用消除音效
-            function playClearAndio(n){
-                if(/stopVoice/.test(startVoiceBtn.src)){
-                    self.clearAudio1.currentTime=0;
-                    self.clearAudio1.play();
-                }
-            }
             //消了几行
             var pointRows=0;
             //当前得分
@@ -1000,28 +1006,28 @@
                 switch (pointRows){
                     case 1: {
                         curPoint=40*self.level;
-                        if(/stopVoice/.test(startVoiceBtn.src)){
+                        if(self.starVoiceFlag){
                             self.clearAudio1.currentTime=0;
                             self.clearAudio1.play();
                         }
                     } break;
                     case 2:{
                         curPoint=100*self.level;
-                        if(/stopVoice/.test(startVoiceBtn.src)){
+                        if(self.starVoiceFlag){
                             self.clearAudio2.currentTime=0;
                             self.clearAudio2.play();
                         }
                     } break;
                     case 3:{
                         curPoint=300*self.level;
-                        if(/stopVoice/.test(startVoiceBtn.src)){
+                        if(self.starVoiceFlag){
                             self.clearAudio3.currentTime=0;
                             self.clearAudio3.play();
                         }
                     } break;
                     case 4:{
                         curPoint=1200*self.level;
-                        if(/stopVoice/.test(startVoiceBtn.src)){
+                        if(self.starVoiceFlag){
                             self.clearAudio4.currentTime=0;
                             self.clearAudio4.play();
                         }
@@ -1057,7 +1063,7 @@
                 if(activeBlock[i].y+1>=self.cols){
                     // console.log("触底");
                     //检测键盘下键 与 s键是否处于按下状态 如果是添加相应音效
-                    if(self.speedDownFlag){
+                    if(self.speedDownFlag && self.starVoiceFlag){
                         self.speedDown.currentTime=0;
                         self.speedDown.play();
                     }
@@ -1074,7 +1080,7 @@
                 if(self.dataArr[rowIndex] && self.dataArr[rowIndex][colIndex]>=1){
                     // console.log("遇到其他方块");
                     //检测键盘下键 与 s键是否处于按下状态 如果是添加相应音效
-                    if(self.speedDownFlag){
+                    if(self.speedDownFlag && self.starVoiceFlag){
                         self.speedDown.currentTime=0;
                         self.speedDown.play();
                     }
@@ -1087,10 +1093,20 @@
                         if(self.activeBlock.xy[j].y>=0 && self.dataArr[0][self.activeBlock.xy[j].x]>=1){
                             self.drawCanvasBlockFlag=false;
                             self.toTopFlag=false;
+                            //是否要显示游戏结束画面的标志
+                            self.showGameOverFlag=true;
                             console.log("游戏结束");
-                            // console.log(self.activeBlock.xy);
+                            // 播放gameOver音效
+                            if(self.starVoiceFlag){
+                                self.gameOver.currentTime=0;
+                                self.gameOver.play();
+                            }
                             break;
+                        }else{
+                            //是否要显示游戏结束画面的标志
+                            self.showGameOverFlag=false;
                         }
+
                     }
                     moveFlag=false;
                     break;
@@ -1279,6 +1295,12 @@
                    self.moveAudio.play();
                }
            }
+           //点击音效
+            function clickAndioFunc() {
+                self.clickAudio.currentTime = 0;
+                self.clickAudio.play();
+            }
+
             document.addEventListener("keydown",function(e){
                 // 监听方向键
                 // 上 与 W键
@@ -1306,6 +1328,8 @@
                             // 根据方块坐标绘制新的方块
                             self.drawBlockCanvas();
                         }
+                        //是否要绘制游戏结束画面
+                        self.showGameOver();
                     }
                 }
                 // 左 与 A键
@@ -1338,7 +1362,19 @@
             // 开始游戏 暂停游戏 事件
             var startGame=document.getElementById("startGame");
             startGame.addEventListener("click",function () {
+                //播放点击音效
+                clickAndioFunc();
                 if(/startGame/.test(this.src)){
+                    //播放fight音效
+                    if(self.starVoiceFlag){
+                        self.fight.currentTime = 0;
+                        self.fight.play();
+                    }
+                    //第一次点击开始游戏 开始播放背景音乐
+                    if(self.activeBlock===null){
+                        self.bgAudio.play();
+                    }
+
                     if(self.toTopFlag===true){
                         self.starFlag=true;
                         this.src="./images/stopGame.png";
@@ -1366,6 +1402,13 @@
             // 重新开始 事件
             var reStart=document.getElementById("reStart");
             reStart.addEventListener("click",function () {
+                //播放fight音效
+                if(self.starVoiceFlag){
+                    self.fight.currentTime = 0;
+                    self.fight.play();
+                }
+                //播放点击音效
+                clickAndioFunc();
                 //判断开始游戏按钮是否为开始状态 如果是则需要换为暂停状态 因为重新开始就代表游戏已经开始
                 var startGame=document.getElementById("startGame");
                 if(/startGame/.test(startGame.src)){
@@ -1395,6 +1438,7 @@
                 self.drawCanvasBlockFlag=true;
                 self.starFlag=true;
                 self.toTopFlag=true;
+                self.showGameOverFlag=false;
 
                 //恢复初始速度
                 self.speedTime=1000;
@@ -1419,12 +1463,16 @@
             // 开启声音 事件
             var startVoice=document.getElementById("startVoice");
             startVoice.addEventListener("click",function () {
+                //播放点击音效
+                clickAndioFunc();
                 if(/stopVoice/.test(this.src)){
                     this.src="./images/startVoice.png";
                     self.bgAudio.pause();
+                    self.starVoiceFlag=false;
                 }else{
                     this.src="./images/stopVoice.png";
                     self.bgAudio.play();
+                    self.starVoiceFlag=true;
                 }
             });
         },
@@ -1500,61 +1548,46 @@
             pointTitle.appendChild(point);
             divInfo.appendChild(pointTitle);
 
+            //创建声音
+            function creatAudio(fileName){
+                var audio = new Audio();
+                audio.src = "./voice/"+fileName+".mp3"
+                audio.preload=true;
+                return audio;
+            }
             //创建移动声音
-            self.moveAudio = new Audio();
-            self.moveAudio.src = "./voice/pop.mp3";
-            self.moveAudio.preload=true;
+            self.moveAudio=creatAudio("pop");
             //创建消除声音
-            self.clearAudio1 = new Audio();
-            self.clearAudio1.src = "./voice/good.mp3";
-            self.clearAudio1.preload=true;
-            //音量
-            self.clearAudio1.volume=1;
-
-            self.clearAudio2 = new Audio();
-            self.clearAudio2.src = "./voice/great.mp3";
-            self.clearAudio2.preload=true;
-
-            self.clearAudio3 = new Audio();
-            self.clearAudio3.src = "./voice/excellent.mp3";
-            self.clearAudio3.preload=true;
-
-            self.clearAudio4 = new Audio();
-            self.clearAudio4.src = "./voice/amazing.mp3";
-            self.clearAudio4.preload=true;
-
+            self.clearAudio1=creatAudio("good");
+            self.clearAudio2=creatAudio("great");
+            self.clearAudio3=creatAudio("excellent");
+            self.clearAudio4=creatAudio("amazing");
             //创建快速下落触底的音效
-            self.speedDown = new Audio();
-            self.speedDown.src = "./voice/clearBg.mp3";
-            self.speedDown.preload=true;
-
+            self.speedDown=creatAudio("clearBg");
+            //创建点击音效
+            self.clickAudio=creatAudio("click");
+            //创建开始fight音效
+            self.fight=creatAudio("fight");
+            // 游戏结束音效
+            self.gameOver=creatAudio("gameOver");
             //创建背景声音
-            self.bgAudio = new Audio();
-            self.bgAudio.src = "./voice/Secret.mp3";
-            // self.bgAudio.autoplay = true;
-            self.bgAudio.preload = true;
+            self.bgAudio=creatAudio("bgMusic");
             self.bgAudio.loop = true;
             //音量
             self.bgAudio.volume=0.8;
 
 
-
-            //创建开始游戏 重新开始img
-            var startGame=document.createElement("img");
-            startGame.src="./images/startGame.png";
-            startGame.id="startGame";
-            divInfo.appendChild(startGame);
-
-            var reStart=document.createElement("img");
-            reStart.src="./images/reStart.png";
-            reStart.id="reStart";
-            divInfo.appendChild(reStart);
-
-            var startVoice=document.createElement("img");
-            startVoice.src="./images/stopVoice.png";
-            startVoice.id="startVoice";
-            divInfo.appendChild(startVoice);
-
+            //创建开始游戏、重新开始、开启声音 按钮
+            function creatImg(id,fileName){
+                var imgDom=document.createElement("img");
+                var file=fileName || id;
+                imgDom.src="./images/"+file+".png";
+                imgDom.id=id;
+                divInfo.appendChild(imgDom);
+            }
+            creatImg("startGame");
+            creatImg("reStart");
+            creatImg("startVoice","stopVoice");
 
             self.infoCanvas.ctx=self.infoCanvas.getContext("2d")
             self.infoCanvas.ctx.beginPath();
@@ -1598,6 +1631,38 @@
             // self.canvas.ctx.fillRect(0, 0, self.canvasW, self.canvasH);
             self.canvas.ctx.stroke();
         },
+        //是否要绘制游戏结束画面
+        showGameOver:function () {
+          var self=this;
+          var y=self.canvasH;
+            //是否要绘制游戏结束画面
+            if(self.showGameOverFlag){
+                self.canvas.ctx.fillStyle="rgba(0,0,0,0.3)";
+                var rect=setInterval(function(){
+                    self.clearCanvas();
+                    // 绘制基础底色和网格
+                    self.drawBase();
+                    // 绘制dataArr中值为1的小方块
+                    self.drawDataArrCanvas();
+                    self.canvas.ctx.fillRect(0,y,self.canvasW, self.canvasH);
+                    y-=10;
+                    if(y===-10){
+                        clearInterval(rect);
+                        self.canvas.ctx.drawImage(self.imgGameOver,25,125,200,128);
+                    }
+                },10)
+            }
+        },
+        //游戏第一次开始时候绘制说明画面
+        drawIntroduction:function(){
+            var self=this;
+            self.canvas.ctx.fillStyle="rgba(0,0,0,0.3)";
+            self.canvas.ctx.fillRect(0,0,self.canvasW, self.canvasH);
+            self.imgGameIntroduction.onload=function(){
+                console.log(this.width);
+                self.canvas.ctx.drawImage(self.imgGameIntroduction,0,0,this.width,this.height);
+            }
+        },
         //循环下落
         loopDown:function(){
             var self=this;
@@ -1615,6 +1680,8 @@
                     self.changeBlockXY();
                     // 绘制dataArr中值为1的小方块
                     self.drawDataArrCanvas();
+                    //是否要绘制游戏结束画面
+                    self.showGameOver();
                 }
                 console.log(self.time);
             },self.speedTime);
@@ -1644,6 +1711,12 @@
 
             self.imgLightBlue=new Image();
             self.imgLightBlue.src="./images/lightBlueBlcok.png";
+
+            self.imgGameOver=new Image();
+            self.imgGameOver.src="./images/gameOver.png";
+
+            self.imgGameIntroduction=new Image();
+            self.imgGameIntroduction.src="./images/gameIntroduction.jpg";
         },
         _init:function(){
             var self=this;
@@ -1657,9 +1730,10 @@
             self.buildBase();
             // 随机生成一个形态的坐标
             self.builBlockXY();
-            // self.drawBlockCanvas();
             // 监听键盘上下左右事件
             self.bindEvent();
+            //绘制游戏第一次开始时候绘制说明画面
+            self.drawIntroduction();
         }
     }
     window.Tetris=Tetris;
