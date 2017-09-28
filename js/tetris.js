@@ -1370,9 +1370,21 @@
                         self.fight.currentTime = 0;
                         self.fight.play();
                     }
-                    //第一次点击开始游戏 开始播放背景音乐
+                    //第一次点击开始游戏 开始播放背景音乐 并动画移除游戏说明页面
                     if(self.activeBlock===null){
                         self.bgAudio.play();
+                        //动画移除游戏说明页面
+                        var y=0;
+                        var intro=setInterval(function(){
+                            self.clearCanvas();
+                            // 绘制基础底色和网格
+                            self.drawBase();
+                            self.canvas.ctx.drawImage(self.imgGameIntroduction,0,y,self.canvasW,self.canvasH);
+                            y+=5;
+                            if(y===self.canvasH+5){
+                                clearInterval(intro);
+                            }
+                        },5)
                     }
 
                     if(self.toTopFlag===true){
@@ -1445,7 +1457,6 @@
 
                 if(self.time){
                     clearTimeout(self.time);
-
                     // 清空画布
                     self.clearCanvas();
                     // 绘制基础底色和网格
@@ -1656,8 +1667,6 @@
         //游戏第一次开始时候绘制说明画面
         drawIntroduction:function(){
             var self=this;
-            self.canvas.ctx.fillStyle="rgba(0,0,0,0.3)";
-            self.canvas.ctx.fillRect(0,0,self.canvasW, self.canvasH);
             self.imgGameIntroduction.onload=function(){
                 console.log(this.width);
                 self.canvas.ctx.drawImage(self.imgGameIntroduction,0,0,this.width,this.height);
