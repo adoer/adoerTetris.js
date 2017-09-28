@@ -1,4 +1,4 @@
-"use strict"
+// "use strict"
 +(function(){
     var Tetris=function(opt) {
         this.blockSize=opt.blockSize || 25;
@@ -16,12 +16,12 @@
         canvasW:this.blockSize*10,
         canvasH:this.blockSize*20,
         infoCanvas:null,
-
         //记录方向键与S键被按下的状态
         speedDownFlag:false,
-
         //开启声音flag 默认开启
         starVoiceFlag:true,
+
+        //音效
         //移动声音
         moveAudio:null,
         //背景声音
@@ -469,7 +469,6 @@
         },
         // 创建数组
         dataArr1: [
-            //真实
          // [0,1,2,3,4,5,6,7,8,9],
             [2,2,2,2,0,0,0,0,0,0],
             [2,2,2,2,0,0,0,0,0,0],

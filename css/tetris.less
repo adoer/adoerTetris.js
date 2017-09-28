@@ -9,6 +9,8 @@ html,body{
   padding: 47px;
   background: url("../images/borderBg.png") no-repeat 22px 16px;
   background-size: 303px 511px;
+  //调整ie9、ie10的样式问题
+  background-size: 301px 509px\9;
 }
 #tetris>canvas:first-child{
   background: #295159 url("../images/logo.png") no-repeat center 29.5%;
@@ -36,6 +38,7 @@ html,body{
     border-radius:4px;
   }
   img{
+
     width: 100px;
     cursor: pointer;
     display: block;
@@ -43,6 +46,8 @@ html,body{
     padding-left: 2px;
     box-shadow: 0px 1px 8px -1px #a87a15 inset;
     border-radius: 42px;
+    //兼容ie10 加了高度，不然高度会变形
+    height: 36.56px;
     &:hover{
       box-shadow: 0px 1px 8px -1px #a87a15;
 
