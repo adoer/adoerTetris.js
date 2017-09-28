@@ -42,9 +42,9 @@ gulp.task('js合并压缩',function(){
 });
 
 gulp.task('defualt',['less打包压缩','js合并压缩'],function(){
-    browserSync.init({
+     ({
         server:"./",
-        port : 9008,
+        port : 9007,
         browser : "chrome"
     });
     gulp.watch(PATH_DEV_LESS,['less打包压缩']);
