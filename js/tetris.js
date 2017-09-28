@@ -923,24 +923,32 @@
             self.infoCanvas.ctx.stroke();
 
             var cacheBlock=self.cacheBlockData[self.cacheBlock.shape][self.cacheBlock.dir];
-            for(var i=0,l=cacheBlock.xy.length;i<l;i++){
-                var x=cacheBlock.xy[i].x*self.blockSize;
-                var y=cacheBlock.xy[i].y*self.blockSize;
+            var img;
+            switch (cacheBlock.color){
+                case "blue":img=self.imgBlue;break;
+                case "pink":img=self.imgPink;break;
+                case "red":img=self.imgRed;break;
+                case "green":img=self.imgGreen;break;
+                case "purple":img=self.imgPurple;break;
+                case "yellow":img=self.imgYellow;break;
+                case "lightBlue":img=self.imgLightBlue;break;
+            }
 
-                self.infoCanvas.ctx.fillStyle="rgba(0,0,0,0.3)";
-                self.infoCanvas.ctx.fillRect(x, y,self.blockSize, self.blockSize);
-
-                var img;
-                switch (cacheBlock.color){
-                    case "blue":img=self.imgBlue;break;
-                    case "pink":img=self.imgPink;break;
-                    case "red":img=self.imgRed;break;
-                    case "green":img=self.imgGreen;break;
-                    case "purple":img=self.imgPurple;break;
-                    case "yellow":img=self.imgYellow;break;
-                    case "lightBlue":img=self.imgLightBlue;break;
+            function eachBlock(){
+                for(var i=0,l=cacheBlock.xy.length;i<l;i++){
+                    var x=cacheBlock.xy[i].x*self.blockSize;
+                    var y=cacheBlock.xy[i].y*self.blockSize;
+                    self.infoCanvas.ctx.fillStyle="rgba(0,0,0,0.3)";
+                    self.infoCanvas.ctx.fillRect(x, y,self.blockSize, self.blockSize);
+                    self.infoCanvas.ctx.drawImage(img,x,y,self.blockSize,self.blockSize);
                 }
-                self.infoCanvas.ctx.drawImage(img,x,y,self.blockSize,self.blockSize);
+            }
+            if(self.activeBlock===null){
+                img.onload=function(){
+                    eachBlock();
+                }
+            }else{
+                eachBlock();
             }
         },
         buildRandBlock:function(){
