@@ -1,5 +1,3 @@
-# tetris
-基于canvas的俄罗斯方块游戏
 ## 演示地址
 [点击这里](http://www.xerduo.com/) （域名www.xerduo.com正在备案，备案成功后恢复访问）
 ## 界面预览
