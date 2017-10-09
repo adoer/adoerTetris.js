@@ -1,17 +1,20 @@
 # tetris
 基于canvas的俄罗斯方块游戏
+### 演示地址
+[点击这里](www.xerduo.com)
+*域名正在备案，备案成功后恢复访问*
 ## 界面预览
 初始界面
 
-![](http://onix7zh9h.bkt.clouddn.com/17-10-9/1766957.jpg)
+![](http://onix7zh9h.bkt.clouddn.com/17-10-9/51229534.jpg)
 
 开始游戏界面
 
-![](http://onix7zh9h.bkt.clouddn.com/17-10-9/84127092.jpg)
+![](http://onix7zh9h.bkt.clouddn.com/17-10-9/7084383.jpg)
 
 游戏结束界面
 
-![](http://onix7zh9h.bkt.clouddn.com/17-10-9/10065682.jpg)
+![](http://onix7zh9h.bkt.clouddn.com/17-10-9/21856968.jpg)
 
 ## 使用方法
 ```html
