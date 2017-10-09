@@ -8,9 +8,9 @@
 游戏结束界面
 ![](http://onix7zh9h.bkt.clouddn.com/17-10-9/4566227.jpg)
 ## 使用方法
-'''javascript
+```javascript
     // 初始化
     var tetris=new Tetris({
         id:"tetris"
     });
-'''
+```
