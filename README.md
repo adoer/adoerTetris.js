@@ -1,10 +1,8 @@
 # tetris
 基于canvas的俄罗斯方块游戏
-### 演示地址
+## 演示地址
 [点击这里](http://www.xerduo.com/)
-{% raw %}
 <span style="font-size:12px;">（域名www.xerduo.com正在备案，备案成功后恢复访问）</span>
-{% endraw%}
 ## 界面预览
 初始界面
 
