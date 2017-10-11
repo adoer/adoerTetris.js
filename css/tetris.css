@@ -8,7 +8,13 @@ body {
 * {
   box-sizing: border-box;
 }
+body {
+  background: url("../images/bg.jpg");
+  background-size: cover;
+}
 #tetris {
+  margin: auto;
+  width: 490px;
   overflow: hidden;
   padding: 47px;
   background: url("../images/borderBg.png") no-repeat 22px 16px;
@@ -35,7 +41,7 @@ body {
   border-radius: 0 6px 6px 0;
   border-right: 2px solid #e7bd63;
   border-bottom: 1px solid #dfb353;
-  box-shadow: 3px 3px 3px 0px #93adbe;
+  box-shadow: 3px 3px 3px 0px #d5ccb8;
 }
 #divInfo > canvas {
   border-radius: 4px;
