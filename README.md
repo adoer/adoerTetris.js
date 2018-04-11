@@ -1,5 +1,5 @@
 ## 演示地址
-[点击这里](http://www.xerduo.com/)
+[点击这里](http://www.xerduo.com/adoerTetris.js//)
 ## 界面预览
 初始界面
 
