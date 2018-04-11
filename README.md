@@ -3,15 +3,11 @@
 ## 界面预览
 初始界面
 
-![](http://onix7zh9h.bkt.clouddn.com/17-10-9/51229534.jpg)
-
-开始游戏界面
-
-![](http://onix7zh9h.bkt.clouddn.com/17-10-9/7084383.jpg)
+![](https://raw.githubusercontent.com/adoer/adoerTetris.js/gh-pages/preview/start.jpg)
 
 游戏结束界面
 
-![](http://onix7zh9h.bkt.clouddn.com/17-10-9/21856968.jpg)
+![](https://raw.githubusercontent.com/adoer/adoerTetris.js/gh-pages/preview/over.jpg)
 
 ## 使用方法
 ```html
