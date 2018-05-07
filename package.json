@@ -4,8 +4,7 @@
   "description": "基于canvas的俄罗斯方块游戏",
   "main": "gulpfile.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node ./bin/publish.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
